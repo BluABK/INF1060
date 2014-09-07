@@ -1,0 +1,127 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+// Create the linked list node
+struct node {
+	char *ptr;
+	struct node *next;
+};
+
+// Linked list to store file data
+struct list {
+	struct node *root;
+};
+
+// Function declarations
+
+void print_file(struct node *list) {
+	// Traverse list line-by-line, add to linked list and print to stdout
+	printf("File contents:\n");
+	struct node *tmp = list;
+	while(tmp) {
+		printf("\t%s", tmp->ptr);
+		tmp = tmp->next;
+	}
+	printf("\n");
+}
+
+void print_random_ln() {
+	// dummy function
+}
+
+void replace_vow() {
+	// dummy function
+}
+
+void remove_vow() {
+	// dummy function
+}
+
+void print_len() {
+	// dummy function
+}
+
+void help() {
+	const char * helpmsg =
+		"USAGE: ./oppg1i command input_file\n"
+		"\n"
+		"where \"command\" is one of the following:\n"
+		"\n"
+		"\tprint        print input_file\n"
+		"\trandom       print a random line\n"
+		"\treplace      replace the vowels with all the other vowels\n"
+		"\tremove       remove vowels\n"
+		"\tlen          print the number of characters in the input_file\n"
+		"\thelp         display this help message\n";
+
+	printf(helpmsg);
+}
+
+int main(int argc, char *argv[]) {
+	struct node *list_start = NULL;
+	struct node *list_end   = NULL;
+	struct node *tmpnode	= NULL;
+	int list_count          = 0;
+	char line[1024];
+	FILE *fp;
+
+	if (argc == 3) {
+		// Create linked list
+		fp = fopen(argv[2], "r");
+		if (fp) {
+			while (fgets(line, sizeof(line), fp)) {
+				// Set a maximum of 1023 characters, removes the last character (newline)
+				//line[strlen(line)-1] = 0;
+				
+				tmpnode = (struct node *) malloc(sizeof(struct node));
+				tmpnode->ptr = malloc(strlen(line)+1); 
+				strcpy(tmpnode->ptr, line);
+				
+				// Insert line into linked list
+				if(!list_end){
+					// this is the first time we insert
+					list_start = tmpnode;
+					list_end = tmpnode;
+				} else {
+					// This is just another node
+					list_end->next = tmpnode;
+					list_end = tmpnode;
+				}
+				list_count++;
+			}
+			// If the file handle is open, close it.
+			fclose(fp);
+		} else {
+			printf("Failed to open file '%s'", argv[2]);
+			return 1;
+		}
+
+		if (!strcmp(argv[1], "print"))		print_file(list_start);
+		else if (!strcmp(argv[1], "random"))	print_random_ln();
+		else if (!strcmp(argv[1], "replace"))	replace_vow();
+		else if (!strcmp(argv[1], "remove"))	remove_vow();
+		else if (!strcmp(argv[1], "len"))	print_len();
+		else 					help();
+
+		// destroy list
+		// as long as we have a list:
+		// 	tmpnode is the start of the list's next
+		// 	free the head of the list
+		// 	set the new head of the list to tmpnode (when next->NULL then the new head will be set to NULL automagically)
+		while (list_start) {
+			tmpnode = list_start->next;
+			free(list_start->ptr);
+			free(list_start);
+			list_count--;
+			list_start = tmpnode;
+		}
+		list_end = NULL;
+	} else {
+                if (argc < 3) printf("You have entered too few arguments.\n");
+		if (argc > 3) printf("You have entered too many arguments.\n");
+                help();
+	}
+
+	return 0;
+}
