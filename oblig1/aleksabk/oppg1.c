@@ -53,7 +53,7 @@ void print_random_ln(struct node *list, int list_length) {
 	}
 }
 // TODO: Finish
-void replace_vow(struct node *list) {
+void replace_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	// Traverse the list while replacing all vowels and then print the result
 	printf("Replace vowels:\n");
 	// Create a temporary node ptr to hold the list
@@ -64,10 +64,11 @@ void replace_vow(struct node *list) {
 	// Traverse the list
 	while(tmp) {
 		
+		tmp = tmp->next;		
 	}
 }
 // TODO: Finish
-void remove_vow(struct node *list) {
+void remove_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	// Traverse the list while removing all vowels and then print the result
 	printf("Remove vowels:\n");
 	// Create a temporary node ptr to hold the list
@@ -78,6 +79,7 @@ void remove_vow(struct node *list) {
 	// Traverse the list
 	while(tmp) {
 		
+		tmp = tmp->next;
 	}
 }
 
@@ -94,7 +96,7 @@ void print_len(struct node *list) {
 }
 
 void help() {
-	const char * helpmsg =
+	const char *helpmsg =
 		"USAGE: ./oppgi command input_file\n"
 		"\n"
 		"where \"command\" is one of the following:\n"
@@ -114,9 +116,10 @@ int main(int argc, char *argv[]) {
 	struct node *list_end   = NULL;
 	struct node *tmpnode	= NULL;
 	int list_count          = 0;
+	char vowels_lower[]	= "aeiouy\xe6\xf8\xe5";
+	char vowels_upper[]	= "AEIOUY\xc6\xd8\xc5";
 	char line[1024];
 	FILE *fp;
-
 	if (argc == 3) {
 		// Create linked list
 		fp = fopen(argv[2], "r");
@@ -151,8 +154,8 @@ int main(int argc, char *argv[]) {
 		// Check for arguments and run appropriate function
 		if (!strcmp(argv[1], "print"))		print_file(list_start);
 		else if (!strcmp(argv[1], "random"))	print_random_ln(list_start, list_count);
-		else if (!strcmp(argv[1], "replace"))	replace_vow(list_start);
-		else if (!strcmp(argv[1], "remove"))	remove_vow(list_start);
+		else if (!strcmp(argv[1], "replace"))	replace_vow(list_start, vowels_lower, vowels_upper);
+		else if (!strcmp(argv[1], "remove"))	remove_vow(list_start, vowels_lower, vowels_upper);
 		else if (!strcmp(argv[1], "len"))	print_len(list_start);
 		else 					help();
 
