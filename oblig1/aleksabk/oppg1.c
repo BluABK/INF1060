@@ -21,6 +21,8 @@ void print_file(struct node *list) {
 	printf("File contents:\n");
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
+
+	// Traverse the list
 	while(tmp) {
 		printf("\t%s", tmp->ptr);
 		tmp = tmp->next;
@@ -38,6 +40,8 @@ void print_random_ln(struct node *list, int list_length) {
 	// Generate a random number between 0 and list length
 	int rnd = rand() % list_length;
 	int count = 0;
+
+	// Traverse the list
 	while(tmp) {
 		if (count == rnd) {
 			printf("\t%s\n", tmp->ptr);
@@ -48,17 +52,45 @@ void print_random_ln(struct node *list, int list_length) {
 		count++;
 	}
 }
+// TODO: Finish
+void replace_vow(struct node *list) {
+	// Traverse the list while replacing all vowels and then print the result
+	printf("Replace vowels:\n");
+	// Create a temporary node ptr to hold the list
+	struct node *tmp = list;
+	// Store the modified line here
+	char modline[1024];
+	
+	// Traverse the list
+	while(tmp) {
+		
+	}
+}
+// TODO: Finish
+void remove_vow(struct node *list) {
+	// Traverse the list while removing all vowels and then print the result
+	printf("Remove vowels:\n");
+	// Create a temporary node ptr to hold the list
+	struct node *tmp = list;
+	// Store the modified line here
+	char modline[1024];
 
-void replace_vow() {
-	// dummy function
+	// Traverse the list
+	while(tmp) {
+		
+	}
 }
 
-void remove_vow() {
-	// dummy function
-}
-
-void print_len() {
-	// dummy function
+void print_len(struct node *list) {
+	// Create a temporary node ptr to hold the list
+	struct node *tmp = list;
+	// Store the string length here
+	int file_length = 0;
+	while(tmp) {
+		file_length = file_length + strlen(tmp->ptr);
+		tmp = tmp->next;
+	}
+	printf("The text is %d characters long\n", file_length);
 }
 
 void help() {
@@ -119,9 +151,9 @@ int main(int argc, char *argv[]) {
 		// Check for arguments and run appropriate function
 		if (!strcmp(argv[1], "print"))		print_file(list_start);
 		else if (!strcmp(argv[1], "random"))	print_random_ln(list_start, list_count);
-		else if (!strcmp(argv[1], "replace"))	replace_vow();
-		else if (!strcmp(argv[1], "remove"))	remove_vow();
-		else if (!strcmp(argv[1], "len"))	print_len();
+		else if (!strcmp(argv[1], "replace"))	replace_vow(list_start);
+		else if (!strcmp(argv[1], "remove"))	remove_vow(list_start);
+		else if (!strcmp(argv[1], "len"))	print_len(list_start);
 		else 					help();
 
 		// destroy list
