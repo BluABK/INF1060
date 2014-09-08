@@ -31,20 +31,17 @@ void print_random_ln(struct node *list, int list_length) {
 	// Pick and print a random line from the list
 	printf("Random line:\n");
 	struct node *tmp = list;
-//	count = 0;
-	int i;
+	// Generate a random number between 0 and list length
 	int rnd = (rand() % list_length);
-
-	
-//	while(tmp) {
-//		count++;
-//		if (rand() * count) / list_len == 0)
-//		for (i = 0;i < 1; i++) {
-			
-//		}
-//	}
-	
-		printf("\t%s\n",); 
+	int count = 0;
+	while(tmp) {
+		if (count == rnd) {
+			printf("\t%s\n", tmp->ptr);
+			break;
+		}
+		tmp = tmp->next;
+		count++;
+	}
 }
 
 void replace_vow() {
@@ -114,8 +111,9 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 
+		// Check for arguments and run appropriate function
 		if (!strcmp(argv[1], "print"))		print_file(list_start);
-		else if (!strcmp(argv[1], "random"))	print_random_ln();
+		else if (!strcmp(argv[1], "random"))	print_random_ln(list_start, list_count);
 		else if (!strcmp(argv[1], "replace"))	replace_vow();
 		else if (!strcmp(argv[1], "remove"))	remove_vow();
 		else if (!strcmp(argv[1], "len"))	print_len();
