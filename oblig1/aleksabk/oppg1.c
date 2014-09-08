@@ -78,7 +78,21 @@ void remove_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 
 	// Traverse the list
 	while(tmp) {
-		
+//		modline = tmp->ptr;
+		modline = NULL;
+
+		// Traverse the line/string
+		for (int i = 0; i < strlen(tmp->ptr); i++) {
+//			char tmpstring[1024] = tmp->ptr;
+			// Traverse current character through the vowels lists
+			for (int j = 0; j < strlen(tmp->ptr)
+				if (strchr(vowels_lower, tmp->ptr[i]) break;
+				if (str // TODO: End of last session
+
+
+			modline = modline + tmp->ptr[i]; 
+		}
+		printf("%s", modline);
 		tmp = tmp->next;
 	}
 }
