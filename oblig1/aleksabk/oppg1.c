@@ -16,8 +16,9 @@ struct list {
 // Function declarations
 
 void print_file(struct node *list) {
-	// Traverse list line-by-line, add to linked list and print to stdout
+	// Traverse linked list and print line-by-line
 	printf("File contents:\n");
+	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
 	while(tmp) {
 		printf("\t%s", tmp->ptr);
@@ -26,8 +27,24 @@ void print_file(struct node *list) {
 	printf("\n");
 }
 
-void print_random_ln() {
-	// dummy function
+void print_random_ln(struct node *list, int list_length) {
+	// Pick and print a random line from the list
+	printf("Random line:\n");
+	struct node *tmp = list;
+//	count = 0;
+	int i;
+	int rnd = (rand() % list_length);
+
+	
+//	while(tmp) {
+//		count++;
+//		if (rand() * count) / list_len == 0)
+//		for (i = 0;i < 1; i++) {
+			
+//		}
+//	}
+	
+		printf("\t%s\n",); 
 }
 
 void replace_vow() {
