@@ -44,7 +44,7 @@ void print_len() {
 
 void help() {
 	const char * helpmsg =
-		"USAGE: ./oppg1i command input_file\n"
+		"USAGE: ./oppgi command input_file\n"
 		"\n"
 		"where \"command\" is one of the following:\n"
 		"\n"
@@ -105,6 +105,7 @@ int main(int argc, char *argv[]) {
 		else 					help();
 
 		// destroy list
+		// REMOVEME: comments
 		// as long as we have a list:
 		// 	tmpnode is the start of the list's next
 		// 	free the head of the list
