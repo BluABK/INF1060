@@ -83,56 +83,18 @@ void remove_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 //	printf("DEBUG:\t%d\n", strlen(tmp->ptr));
 
 	// Traverse the list
-//	while(tmp) {
-//		modline = "";
-
+	while(tmp) {
+		printf("\t");
 		// Traverse the line item in the list
 		int i;
 		for (i = 0; tmp->ptr[i] != '\0'; i++) {
-//			printf("%c(%d)", tmp->ptr[i],i);
-			if (strchr(vowels_lower, tmp->ptr[i]) || strchr(vowels_upper, tmp->ptr[i])) {
-//				printf("DEBUG:\t%c\n", tmp->ptr[i]);
-					}
-			else {
-				printf("%c", tmp->ptr[i]);
-			}
+			if (strchr(vowels_lower, tmp->ptr[i]) || strchr(vowels_upper, tmp->ptr[i])) continue;
+			printf("%c", tmp->ptr[i]);
 		}
-//		printf("BREAKING OUT!\n");
-//		break;
-/*
-		
-//		modline = tmp->ptr;
-//		modline = NULL;
-
-		// Traverse the line/string
-		int i;
-		for (i = 0; i < strlen(tmp->ptr); i++) {
-//			char tmpstring[1024] = tmp->ptr;
-			// Traverse current character through the vowels lists
-			// Copy each character to a new modified string
-			printf("DEBUG: i = %c\n", tmp->ptr[i]);
-			int j;
-			for (j = 0; j < strlen(tmp->ptr); j++) {
-				printf("DEBUG: j = %d\n", j);
-				// If the character is in the list, break to skip it.
-				if (strchr(vowels_lower, tmp->ptr[i])) break;
-				if (strchr(vowels_upper, tmp->ptr[i])) break;
-				
-				// The character was not in the list, so we add it.
-				modline = modline + tmp->ptr[i];
-				printf("DEBUG: tmp->ptr[i] = ");
-				printf("%d\n", tmp->ptr[i]);
-				printf("ladida\n");
-				printf("DEBUG: modline = ");
-				printf("%s\n", modline);
-			}
-			printf("DEBUG: Left j-loop\n");
-		}
-		printf("DEBUG: Left i-loop\n");
-		printf("%s", modline);
+		// Jump to next item in the list
 		tmp = tmp->next;
-*/
-//	}
+	}
+	printf("\n");
 }
 
 void print_len(struct node *list) {
