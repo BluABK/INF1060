@@ -66,9 +66,6 @@ void replace_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	}
 }
 
-// TODO: Finish
-
-// Hint: printf("DEBUG:\t%c\n", list_start->ptr[6]);
 void remove_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	// Traverse the list while removing all vowels and then print the result
 	printf("Remove vowels:\n");
