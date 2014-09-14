@@ -58,8 +58,6 @@ void replace_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	printf("Replace vowels:\n");
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
-	// Store the modified line here
-	char modline[1024];
 	
 	// Traverse the list
 	while(tmp) {
@@ -76,12 +74,7 @@ void remove_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	printf("Remove vowels:\n");
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
-	// Store the modified line here
-	char modline[1024];
-
 	
-//	printf("DEBUG:\t%d\n", strlen(tmp->ptr));
-
 	// Traverse the list
 	while(tmp) {
 		printf("\t");
@@ -161,7 +154,7 @@ int main(int argc, char *argv[]) {
 			// If the file handle is open, close it.
 			fclose(fp);
 		} else {
-			printf("Failed to open file '%s'", argv[2]);
+			printf("Failed to open file '%s', did you make a typo?\n", argv[2]);
 			return 1;
 		}
 
