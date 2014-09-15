@@ -3,10 +3,10 @@
 
 void print_file(char *filedata) {
 	printf("File contents:\n\n");
-	int i;
-	for (i = 0; filedata[i] != '\0'; i++) {
-		printf("%c", filedata[i]);
-	}
+//	int i;
+//	for (i = 0; filedata[i] != '\0'; i++) {
+		printf("%s", filedata);
+//	}
 	printf("\n");
 }
 
@@ -70,15 +70,10 @@ int main(int argc, char *argv[]) {
 	char *data;
 
 	// If an input file was specified
-	if (argc == 3) {
-		data = malloc(strlen(read_file(argv[2])));
-		strcpy(read_file(argv[2]), data);
-		printf("DEBUG:\tRead file\n");
-		printf("%s", data);
-	}
+	if (argc == 3) 	data = read_file(argv[2]);
 
 	// Check for arguments and run the appropriate function
-	if 	(!strcmp(argv[1], "p") && argc > 2)		print_file(data);
+	if 	(!strcmp(argv[1], "p") && argc > 2)		printf("%s\n", data);
 	else if (!strcmp(argv[1], "e") && argc > 3)		encode_file();
 	else if (!strcmp(argv[1], "d") && argc > 3)		decode_file();
 	else							help();
