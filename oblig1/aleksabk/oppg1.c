@@ -61,9 +61,18 @@ void replace_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	
 	// Traverse the list
 	while(tmp) {
-		
-		tmp = tmp->next;		
+		printf("\t");
+		// Traverse the line item in the list
+		int i;
+		for (i = 0; tmp->ptr[i] != '\0'; i++) {
+			if (strchr(vowels_lower, tmp->ptr[i]) || strchr(vowels_upper, tmp->ptr[i])) {
+				
+			}
+			else printf("%c", tmp->ptr[i]);
+		}
+		tmp = tmp->next;
 	}
+	printf("\n");
 }
 
 void remove_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
