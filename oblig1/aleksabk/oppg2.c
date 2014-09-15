@@ -1,17 +1,33 @@
 #include <stdio.h>
 #include <string.h>
 
-void print_file(char *filedata) {
-	printf("File contents:\n\n");
-//	int i;
-//	for (i = 0; filedata[i] != '\0'; i++) {
-		printf("%s", filedata);
-//	}
-	printf("\n");
-}
+void encode_file(char *input, char *output, const unsigned char *symbols) {
+	int i;
+	output = "";
+	for (i = 0; input[i] != '\0'; i++) {
+		switc
 
-void encode_file() {
-	// Dummy function
+
+		if (strchr(' ', input[i])) {
+			output = output + "00";
+			continue;
+		}
+		if (strchr(':', input[i])) {
+			output = output + "01";
+			continue;
+		}
+		if (strchr('@', input[i])) {
+			output = output + "10";
+			continue;
+		}
+		if (strchr('\n', input[i])) {
+			output = output + "11";
+		}
+		// If nothing matches, keep the character as-is.
+		output = output + input[i];
+	}
+	printf("DEBUG:\tPrinting what-would-be output file:\n");
+	printf("%s", output);
 }
 
 void decode_file() {
@@ -35,8 +51,6 @@ void help() {
 char *read_file(char *filename) {
 	FILE *file = fopen(filename, "r");
 	char *content;
-//	size_t n = 0;
-//	int c;
 
 	if (file == NULL) {
 		printf("Failed to open file '%s', did you make a typo?\n", filename);
@@ -49,15 +63,8 @@ char *read_file(char *filename) {
 	fseek(file, 0, SEEK_SET);
 	content = malloc(f_size);
 
-//	while ((c = fgetc(file) != EOF)) {
-//		content[n++] = (char)c;
-//	}
-
 	// Read file into data variable
 	fread(content, f_size, 1, file);
-
-	// Set end of string
-//	data[n] = '\0';
 
 	// Close the file handle
 	fclose(file);
@@ -68,13 +75,14 @@ char *read_file(char *filename) {
 
 int main(int argc, char *argv[]) {
 	char *data;
+	const unsigned char symbols[4] = {' ',':','@','\n'};
 
 	// If an input file was specified
 	if (argc == 3) 	data = read_file(argv[2]);
 
 	// Check for arguments and run the appropriate function
 	if 	(!strcmp(argv[1], "p") && argc > 2)		printf("%s\n", data);
-	else if (!strcmp(argv[1], "e") && argc > 3)		encode_file();
+	else if (!strcmp(argv[1], "e") && argc > 3)		encode_file(data, argv[3], symbols);
 	else if (!strcmp(argv[1], "d") && argc > 3)		decode_file();
 	else							help();
 
