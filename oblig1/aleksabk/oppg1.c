@@ -119,7 +119,7 @@ void print_len(struct node *list) {
 
 void help() {
 	const char *helpmsg =
-		"USAGE: ./oppgi command input_file\n"
+		"USAGE: ./oppg1 command input_file\n"
 		"\n"
 		"where \"command\" is one of the following:\n"
 		"\n"
