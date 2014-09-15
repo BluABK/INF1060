@@ -59,18 +59,27 @@ void replace_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
 	
-	// Traverse the list
-	while(tmp) {
-		printf("\t");
-		// Traverse the line item in the list
-		int i;
-		for (i = 0; tmp->ptr[i] != '\0'; i++) {
-			if (strchr(vowels_lower, tmp->ptr[i]) || strchr(vowels_upper, tmp->ptr[i])) {
-				
+	// Traverse the list for every vocal letter
+	int i, j;
+	for (i = 0; vowels_lower[i] != '\0'; i++) {
+//		printf("DEBUG:\tvowels_lower[%d] = %c\n", i, vowels_lower[i]);
+		printf("\t... with vowel '%c':\n", vowels_lower[i]);
+		// Traverse the list
+		tmp = list;
+		while(tmp) {
+			printf("\t");
+			// Traverse the line item in the list
+			for (j = 0; tmp->ptr[j] != '\0'; j++) {
+				if (strchr(vowels_lower, tmp->ptr[j]) || strchr(vowels_upper, tmp->ptr[j])) {
+					printf("%c", vowels_lower[i]);
+					continue;
+				}
+				printf("%c", tmp->ptr[j]);
 			}
-			else printf("%c", tmp->ptr[i]);
+			// Jump to the next item in the list	
+			tmp = tmp->next;
 		}
-		tmp = tmp->next;
+			printf("\n\n");
 	}
 	printf("\n");
 }
