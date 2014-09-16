@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 void encode_file(char *input, char *outfile) {
 	FILE *outfd = fopen(outfile, "wb");
@@ -50,10 +51,29 @@ void encode_file(char *input, char *outfile) {
 }
 
 void decode_file(unsigned char *in, int length) {
-	int i;
+	int i,j;
+	const char table[4] = {' ', ':', '@', '\n'};
+	unsigned char value;
 
 	for (i=0; i<length; i++) {
 		// decode and print in[i]
+		for(j=0;j<4;j++){
+			// push amounts:
+			// j	bits	from		to
+			// 0	6	aabbccdd	000000aa
+			// 1	4	aabbccdd	0000aabb
+			// 2	2	aabbccdd	00aabbcc
+			// 3	0	aabbccdd	aabbccdd
+			//
+			// & 0b11
+			// from		to
+			// 000000aa	000000aa
+			// 0000aabb	000000bb
+			// 00aabbcc	000000cc
+			// aabbccdd	000000dd
+			value = (in[i]>>(6-(2*j))) & 0b11;
+			putchar(table[value]);
+		}
 	}
 }
 
@@ -106,7 +126,7 @@ int main(int argc, char *argv[]) {
 	if (argc >= 3) {
 		data = read_file(argv[2], &length);
 		if(data == NULL)
-			return;
+			return 1;
 	}
 
 	// Check for arguments and run the appropriate function
