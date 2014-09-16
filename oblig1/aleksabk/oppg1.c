@@ -1,9 +1,9 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
+#include <stdio.h>  // Required for I/O functions
+#include <string.h> // Required for str* functions
+#include <stdlib.h> // Required for free() and rand()
+#include <time.h>   // Required for seeding rand()
 
-// Create the linked list node
+// Define linked list node
 struct node {
 	char *ptr;
 	struct node *next;
@@ -14,13 +14,11 @@ struct list {
 	struct node *root;
 };
 
-// Function declarations
-
 void print_file(struct node *list) {
-	// Traverse linked list and print line-by-line
-	printf("File contents:\n");
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
+	// Traverse linked list and print line-by-line
+	printf("File contents:\n");
 
 	// Traverse the list
 	while(tmp) {
@@ -31,19 +29,21 @@ void print_file(struct node *list) {
 }
 
 void print_random_ln(struct node *list, int list_length) {
-	// Pick and print a random line from the list
-	printf("Random line:\n");
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
+	int rnd = 0;
+	int count = 0;
+
+	// Pick and print a random line from the list
+	printf("Random line:\n");
 	// Initialize rand with a seed
 	srand(time(NULL));
 	// Generate a random number between 0 and list length
-	int rnd = rand() % list_length;
-	int count = 0;
+	rnd = rand() % list_length;
 
 	// Traverse the list
 	while(tmp) {
-		if (count == rnd) {
+		if(count == rnd) {
 			printf("\t%s\n", tmp->ptr);
 			// We're done here, end the loop
 			break;
@@ -52,57 +52,57 @@ void print_random_ln(struct node *list, int list_length) {
 		count++;
 	}
 }
-// TODO: Finish
 void replace_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
-	// Traverse the list while replacing all vowels and then print the result
-	printf("Replace vowels:\n");
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
-	
-	// Traverse the list for every vocal letter
 	int i, j;
-	for (i = 0; vowels_lower[i] != '\0'; i++) {
-//		printf("DEBUG:\tvowels_lower[%d] = %c\n", i, vowels_lower[i]);
+	// Traverse the list while replacing all vowels and then print the result
+	printf("Replace vowels:\n");
+
+	// Traverse the list for every vocal letter
+	for(i = 0; vowels_lower[i]; i++) {
 		printf("\t... with vowel '%c':\n", vowels_lower[i]);
 		// Traverse the list
 		tmp = list;
 		while(tmp) {
-			printf("\t");
+			putchar('\t');
 			// Traverse the line item in the list
-			for (j = 0; tmp->ptr[j] != '\0'; j++) {
-				if (strchr(vowels_lower, tmp->ptr[j]) || strchr(vowels_upper, tmp->ptr[j])) {
-					printf("%c", vowels_lower[i]);
+			for(j = 0; tmp->ptr[j]; j++) {
+				if(strchr(vowels_lower, tmp->ptr[j]) || strchr(vowels_upper, tmp->ptr[j])) {
+					putchar(vowels_lower[i]);
 					continue;
 				}
-				printf("%c", tmp->ptr[j]);
+				putchar(tmp->ptr[j]);
 			}
-			// Jump to the next item in the list	
+			// Jump to the next item in the list
 			tmp = tmp->next;
 		}
-			printf("\n\n");
+		putchar('\n');
+		putchar('\n');
 	}
-	printf("\n");
+	putchar('\n');
 }
 
 void remove_vow(struct node *list, char *vowels_lower, char *vowels_upper) {
-	// Traverse the list while removing all vowels and then print the result
-	printf("Remove vowels:\n");
 	// Create a temporary node ptr to hold the list
 	struct node *tmp = list;
-	
+	int i;
+	// Traverse the list while removing all vowels and then print the result
+	printf("Remove vowels:\n");
+
 	// Traverse the list
 	while(tmp) {
-		printf("\t");
+		putchar('\t');
 		// Traverse the line item in the list
-		int i;
-		for (i = 0; tmp->ptr[i] != '\0'; i++) {
-			if (strchr(vowels_lower, tmp->ptr[i]) || strchr(vowels_upper, tmp->ptr[i])) continue;
-			printf("%c", tmp->ptr[i]);
+		for(i = 0; tmp->ptr[i]; i++) {
+			if(strchr(vowels_lower, tmp->ptr[i]) || strchr(vowels_upper, tmp->ptr[i]))
+				continue;
+			putchar(tmp->ptr[i]);
 		}
 		// Jump to next item in the list
 		tmp = tmp->next;
 	}
-	printf("\n");
+	putchar('\n');
 }
 
 void print_len(struct node *list) {
@@ -136,26 +136,23 @@ void help() {
 int main(int argc, char *argv[]) {
 	struct node *list_start = NULL;
 	struct node *list_end   = NULL;
-	struct node *tmpnode	= NULL;
+	struct node *tmpnode    = NULL;
 	int list_count          = 0;
-	char vowels_lower[]	= "aeiouy\xe6\xf8\xe5";
-	char vowels_upper[]	= "AEIOUY\xc6\xd8\xc5";
+	char vowels_lower[]     = "aeiouy\xe6\xf8\xe5";
+	char vowels_upper[]     = "AEIOUY\xc6\xd8\xc5";
 	char line[1024];
 	FILE *fp;
-	if (argc == 3) {
+	if(argc == 3) {
 		// Create linked list
 		fp = fopen(argv[2], "r");
-		if (fp) {
-			while (fgets(line, sizeof(line), fp)) {
-				// Set a maximum of 1023 characters, removes the last character (newline)
-				//line[strlen(line)-1] = 0;
-				
-				tmpnode = (struct node *) malloc(sizeof(struct node));
-				tmpnode->ptr = malloc(strlen(line)+1); 
+		if(fp) {
+			while(fgets(line, sizeof(line), fp)) {
+				tmpnode      = (struct node *) malloc(sizeof(struct node));
+				tmpnode->ptr = malloc(strlen(line)+1);
 				strcpy(tmpnode->ptr, line);
-				
+
 				// Insert line into linked list
-				if(!list_end){
+				if(!list_end) {
 					// this is the first time we insert
 					list_start = tmpnode;
 					list_end = tmpnode;
@@ -174,31 +171,29 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Check for arguments and run appropriate function
-		if (!strcmp(argv[1], "print"))		print_file(list_start);
-		else if (!strcmp(argv[1], "random"))	print_random_ln(list_start, list_count);
-		else if (!strcmp(argv[1], "replace"))	replace_vow(list_start, vowels_lower, vowels_upper);
-		else if (!strcmp(argv[1], "remove"))	remove_vow(list_start, vowels_lower, vowels_upper);
-		else if (!strcmp(argv[1], "len"))	print_len(list_start);
-		else 					help();
+		if     (!strcmp(argv[1], "print"))   print_file(list_start);
+		else if(!strcmp(argv[1], "random"))  print_random_ln(list_start, list_count);
+		else if(!strcmp(argv[1], "replace")) replace_vow(list_start, vowels_lower, vowels_upper);
+		else if(!strcmp(argv[1], "remove"))  remove_vow(list_start, vowels_lower, vowels_upper);
+		else if(!strcmp(argv[1], "len"))     print_len(list_start);
+		else                                 help();
 
-		// destroy list
-		// REMOVEME: comments
-		// as long as we have a list:
-		// 	tmpnode is the start of the list's next
-		// 	free the head of the list
-		// 	set the new head of the list to tmpnode (when next->NULL then the new head will be set to NULL automagically)
-		while (list_start) {
+		// Destroy list - as long as we have a list:
+		while(list_start) {
+			// tmpnode is the start of the list's next
 			tmpnode = list_start->next;
+			// free the head of the list
 			free(list_start->ptr);
 			free(list_start);
+			// set the new head of the list to tmpnode (when next->NULL then the new head will be set to NULL automagically)
 			list_count--;
 			list_start = tmpnode;
 		}
 		list_end = NULL;
 	} else {
-                if (argc < 3) printf("You have entered too few arguments.\n");
-		if (argc > 3) printf("You have entered too many arguments.\n");
-		
+                if(argc < 3) printf("You have entered too few arguments.\n");
+		if(argc > 3) printf("You have entered too many arguments.\n");
+
                 help();
 	}
 
