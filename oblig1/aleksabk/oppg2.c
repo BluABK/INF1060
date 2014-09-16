@@ -1,13 +1,22 @@
 #include <stdio.h>
 #include <string.h>
 
-void encode_file(char *input, char *output, const unsigned char *symbols) {
-	int i;
-	output = "";
+void encode_file(char *input, char *outfile) {
+	FILE *outfd = fopen(outfile, "wb");
+	int i,j;
+	unsigned char outb,out;
+
+	if (outfd == NULL) {
+		printf("Failed to open file '%s' for writing, did you make a typo?\n", outfile);
+		return;
+	}
+
+	j=0;
 	for (i = 0; input[i] != '\0'; i++) {
-		switc
+		out=0;
+		// TODO: set out according to input
 
-
+		/*
 		if (strchr(' ', input[i])) {
 			output = output + "00";
 			continue;
@@ -24,10 +33,32 @@ void encode_file(char *input, char *output, const unsigned char *symbols) {
 			output = output + "11";
 		}
 		// If nothing matches, keep the character as-is.
-		output = output + input[i];
+		output = output + input[i]; */
+
+		// Push amounts:
+		// j	bits
+		// 0	6	aa000000
+		// 1	4	00bb0000
+		// 2	2	0000cc00
+		// 3	0	000000dd
+		// 		--------
+		// bitwise or:	aabbccdd
+		outb |= out << ((3-j)*2);
+
+		if(j == 3){
+			// We have filled outb, now write it
+			fwrite(&outb,1,1,outfd);
+			outb=0;
+			j=0;
+		} else {
+			j++;
+		}
 	}
 	printf("DEBUG:\tPrinting what-would-be output file:\n");
 	printf("%s", output);
+
+	// Close the file handle
+	fclose(file);
 }
 
 void decode_file() {
@@ -75,14 +106,13 @@ char *read_file(char *filename) {
 
 int main(int argc, char *argv[]) {
 	char *data;
-	const unsigned char symbols[4] = {' ',':','@','\n'};
 
 	// If an input file was specified
 	if (argc == 3) 	data = read_file(argv[2]);
 
 	// Check for arguments and run the appropriate function
 	if 	(!strcmp(argv[1], "p") && argc > 2)		printf("%s\n", data);
-	else if (!strcmp(argv[1], "e") && argc > 3)		encode_file(data, argv[3], symbols);
+	else if (!strcmp(argv[1], "e") && argc > 3)		encode_file(data, argv[3]);
 	else if (!strcmp(argv[1], "d") && argc > 3)		decode_file();
 	else							help();
 
