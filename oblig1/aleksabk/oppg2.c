@@ -75,6 +75,7 @@ void decode_file(unsigned char *in, int length) {
 			putchar(table[value]);
 		}
 	}
+	putchar('\n');
 }
 
 void help() {
@@ -122,6 +123,11 @@ int main(int argc, char *argv[]) {
 	char *data=NULL;
 	int length;
 
+	if (argc < 2){
+		help();
+		return 0;
+	}
+
 	// If an input file was specified
 	if (argc >= 3) {
 		data = read_file(argv[2], &length);
@@ -132,7 +138,7 @@ int main(int argc, char *argv[]) {
 	// Check for arguments and run the appropriate function
 	if 	(!strcmp(argv[1], "p") && argc > 2)		printf("%s\n", data);
 	else if (!strcmp(argv[1], "e") && argc > 3)		encode_file(data, argv[3]);
-	else if (!strcmp(argv[1], "d") && argc > 3)		decode_file((unsigned char *)data, length);
+	else if (!strcmp(argv[1], "d") && argc > 2)		decode_file((unsigned char *)data, length);
 	else							help();
 
 	if(data) free(data);
