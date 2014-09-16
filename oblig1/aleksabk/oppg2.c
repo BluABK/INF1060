@@ -49,8 +49,12 @@ void encode_file(char *input, char *outfile) {
 	fclose(outfd);
 }
 
-void decode_file() {
-	// Dummy function
+void decode_file(unsigned char *in, int length) {
+	int i;
+
+	for (i=0; i<length; i++) {
+		// decode and print in[i]
+	}
 }
 
 void help() {
@@ -67,8 +71,9 @@ void help() {
         printf(helpmsg);
 }
 
-char *read_file(char *filename) {
-	FILE *file = fopen(filename, "r");
+// take *length in order to "return" a second parameter
+char *read_file(char *filename, int *length) {
+	FILE *file = fopen(filename, "rb");
 	char *content;
 
 	if (file == NULL) {
@@ -83,7 +88,8 @@ char *read_file(char *filename) {
 	content = malloc(f_size);
 
 	// Read file into data variable
-	fread(content, f_size, 1, file);
+	// put f_size in count so that length is set to the number of bytes read
+	*length = fread(content, 1, f_size, file);
 
 	// Close the file handle
 	fclose(file);
@@ -93,16 +99,22 @@ char *read_file(char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-	char *data;
+	char *data=NULL;
+	int length;
 
 	// If an input file was specified
-	if (argc >= 3) 	data = read_file(argv[2]);
+	if (argc >= 3) {
+		data = read_file(argv[2], &length);
+		if(data == NULL)
+			return;
+	}
 
 	// Check for arguments and run the appropriate function
 	if 	(!strcmp(argv[1], "p") && argc > 2)		printf("%s\n", data);
 	else if (!strcmp(argv[1], "e") && argc > 3)		encode_file(data, argv[3]);
-	else if (!strcmp(argv[1], "d") && argc > 3)		decode_file();
+	else if (!strcmp(argv[1], "d") && argc > 3)		decode_file((unsigned char *)data, length);
 	else							help();
 
+	if(data) free(data);
 	return 0;
 }
