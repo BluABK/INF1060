@@ -6,7 +6,7 @@ void encode_file (char *input, char *outfile) {
 	// Open file for binary writing
 	FILE *outfd = fopen(outfile, "wb");
 	int i, j;
-	unsigned char outb, out;
+	unsigned char outb = 0, out;
 
 	// If the file could not be opened
 	if (outfd == NULL) {
@@ -39,7 +39,9 @@ void encode_file (char *input, char *outfile) {
 		} else
 			j++;
 	}
-	// TODO: if j != 0, then input size cannot be divided by 4, then we can either add this byte (add extra spaces) or do as we do now (drop it and truncate the file to nearest 4 byte border
+	// If j != 0, then input size is not divisible by 4. In this case, write extra spaces to align it.
+	if (j)
+		fwrite(&outb,1,1,outfd);
 
 	// Close the file handle
 	fclose(outfd);
