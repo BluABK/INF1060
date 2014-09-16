@@ -13,27 +13,17 @@ void encode_file(char *input, char *outfile) {
 
 	j=0;
 	for (i = 0; input[i] != '\0'; i++) {
-		out=0;
-		// TODO: set out according to input
-
-		/*
-		if (strchr(' ', input[i])) {
-			output = output + "00";
-			continue;
+		if (input[i]==' ') {
+			out = 0b00;
+		} else if (input[i]==':') {
+			out = 0b01;
+		} else if (input[i]=='@') {
+			out = 0b10;
+		} else if (input[i]=='\n') {
+			out = 0b11;
+		} else {
+			out = 0b00; // Default is space
 		}
-		if (strchr(':', input[i])) {
-			output = output + "01";
-			continue;
-		}
-		if (strchr('@', input[i])) {
-			output = output + "10";
-			continue;
-		}
-		if (strchr('\n', input[i])) {
-			output = output + "11";
-		}
-		// If nothing matches, keep the character as-is.
-		output = output + input[i]; */
 
 		// Push amounts:
 		// j	bits
@@ -54,11 +44,9 @@ void encode_file(char *input, char *outfile) {
 			j++;
 		}
 	}
-	printf("DEBUG:\tPrinting what-would-be output file:\n");
-	printf("%s", output);
 
 	// Close the file handle
-	fclose(file);
+	fclose(outfd);
 }
 
 void decode_file() {
@@ -108,7 +96,7 @@ int main(int argc, char *argv[]) {
 	char *data;
 
 	// If an input file was specified
-	if (argc == 3) 	data = read_file(argv[2]);
+	if (argc >= 3) 	data = read_file(argv[2]);
 
 	// Check for arguments and run the appropriate function
 	if 	(!strcmp(argv[1], "p") && argc > 2)		printf("%s\n", data);
