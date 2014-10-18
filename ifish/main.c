@@ -1,24 +1,25 @@
-#define MAX_LENGTH 120
+#define MAX_LENGTH 120		// Cut off input longer than this amount
 #define DELIMITERS " \t\r\n"
-#define _GNU_SOURCE
-#define DEBUG
+#define _GNU_SOURCE		// Define extension for strtok/string.h when forcing -std=c99
+#define DEBUG			// Ahh, verbosity..
 
 #include <stdio.h>
-#include <stdlib.h>	// getenv & friends
-#include <errno.h>	// stderr
-#include <stdbool.h>	// boolean supporti
-#include <unistd.h>	// UNIX
-#include <string.h>	// strtok
+#include <stdlib.h>		// getenv & friends
+#include <errno.h>		// stderr
+#include <stdbool.h>		// boolean support
+#include <unistd.h>		// UNIX Standard library
+#include <string.h>		// strtok
 
 // Set global variables
-char *shell = "ifish";
-bool run = true;
-int cnt = 0;
+char *shell = "ifish";		// Shell name
+bool run = true;		// Main loop
+int cnt = 0;			// Command counter
 
 void prompt(int cmd_cnt) {
 	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cmd_cnt, getenv("PWD") );
 }
 
+// Error feedback handler
 void print_error(char *sh, char *cmd, int errtype) {
 	switch(errtype) {
 		case 0:
