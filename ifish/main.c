@@ -1,13 +1,14 @@
+#define MAX_LENGTH 120
+#define DELIMITERS " \t\r\n"
+#define _GNU_SOURCE
+#define DEBUG
+
 #include <stdio.h>
 #include <stdlib.h>	// getenv & friends
 #include <errno.h>	// stderr
 #include <stdbool.h>	// boolean supporti
 #include <unistd.h>	// UNIX
-
-// Define some constants
-#define MAX_LENGTH 120
-
-#define DEBUG
+#include <string.h>	// strtok
 
 // Set global variables
 char *shell = "ifish";
@@ -15,8 +16,23 @@ bool run = true;
 int cnt = 0;
 
 void prompt(int cmd_cnt) {
-	//return getenv("USER") + "@" + "ifish " + cmd_cnt + ":" + getenv("PATH") +"$ ";
 	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cmd_cnt, getenv("PWD") );
+}
+
+void print_error(char *sh, char *cmd, int errtype) {
+	switch(errtype) {
+		case 0:
+			#ifdef DEBUG
+			fprintf(stderr, "Hm.. There's a mystery afoot. This simply should not happen!\n");
+			#endif
+			break;
+		case 1:	
+			printf("%s: %s: command not found\n", sh, cmd);
+			break;
+		case 2:
+			printf("%s: %s: command not implemented\n", sh, cmd);
+			break;
+	}
 }
 
 // Program exit handler
@@ -27,17 +43,31 @@ void quit() {
 
 int main(int argc, char *argv[]) {
 	#ifdef DEBUG
-		printf("Running in debug mode\n\n");
+		printf("Running in debug mode\n");
 	#endif
+
 	char line[MAX_LENGTH];
+	char *cmd;
 
 	// Program main loop
 	while (run) {
-	//	prompt = set_prompt(cnt++);
-	//	printf(prompt);
 		prompt(cnt++);
 		if (!fgets(line, MAX_LENGTH, stdin)) run = false;
-		system(line);
+		
+		// Parse and execute command
+		if ((cmd = strtok(line, DELIMITERS))) {
+			// Reset errors
+			errno = 0;
+
+			if (strcmp(cmd, "exit") == 0 || strcmp(cmd, "quit") == 0) {
+				quit();
+			} else if (strcmp(cmd, "history") == 0 || strcmp(cmd, "h") == 0) {
+				print_error(shell, cmd, 2);
+			} else if (strcmp(cmd, "derp") == 0) {
+				print_error(shell, cmd, 0);
+			} else system(line);
+			if (errno) print_error(shell, cmd, 1);
+		}
 	}	
 
 	return 0;
