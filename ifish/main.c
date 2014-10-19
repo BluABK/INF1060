@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 	while (run) {
 		prompt(cnt++);
 		if (!fgets(line, MAX_LENGTH, stdin)) run = false;
-		
+
 		// Parse and execute command
 		if ((cmd = strtok(line, DELIMITERS))) {
 			// Reset errors
