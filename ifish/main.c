@@ -51,6 +51,10 @@ void print_error(char *sh, char *cmd, int errtype) {
 	}
 }
 
+void print_debug(char *sh, char *cmd) {
+	fprintf(stderr, "%s (DEBUG) - Read line: %s\n", shell, cmd);
+}
+
 // Program exit handler
 void quit() {
 	printf("\n");
@@ -72,6 +76,9 @@ int main(int argc, char *argv[]) {
 
 		// Parse and execute command
 		if ((cmd = strtok(line, DELIMITERS))) {
+		#ifdef DEBUG
+			print_debug(shell, cmd);
+		#endif
 			// Reset errors
 			errno = 0;
 
