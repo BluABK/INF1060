@@ -15,6 +15,8 @@ char *shell = "ifish";		// Shell name
 bool run = true;		// Main loop
 int cnt = 0;			// Command counter
 
+//  Functions
+
 void prompt(int cmd_cnt) {
 	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cmd_cnt, getenv("PWD") );
 }
