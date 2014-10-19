@@ -4,11 +4,24 @@
 #define DEBUG			// Ahh, verbosity..
 
 #include <stdio.h>
-#include <stdlib.h>		// getenv & friends
+#include <stdlib.h>		// getenv, free & friends
 #include <errno.h>		// stderr
 #include <stdbool.h>		// boolean support
 #include <unistd.h>		// UNIX Standard library
 #include <string.h>		// strtok
+
+// Linked list node
+
+struct node {
+	char *ptr;
+	struct node *next;
+	struct node *prev;
+};
+
+struct cmd_history {
+	struct node *root;
+};
+
 
 // Set global variables
 char *shell = "ifish";		// Shell name
