@@ -1,7 +1,7 @@
 #define MAX_LENGTH 120		// Cut off input longer than this amount
 #define DELIMITERS " \t\r\n"
 #define _GNU_SOURCE		// Define extension for strtok/string.h when forcing -std=c99
-#define DEBUG			// Ahh, verbosity..
+//#define DEBUG			// Ahh, verbosity..
 
 #include <stdio.h>
 #include <stdlib.h>		// getenv, free & friends
