@@ -10,6 +10,7 @@
 #include <unistd.h>		// UNIX Standard library
 #include <string.h>		// strtok
 #include <ctype.h>		// isspace
+#include <sys/wait.h>		// waitpid / wait
 
 #include "safefork.h"
 
@@ -28,7 +29,6 @@ struct cmd_history {
 
 // Set global variables
 char *shell = "ifish";		// Shell name
-bool run = true;		// Main loop
 
 //  Functions
 
@@ -62,12 +62,6 @@ void print_debug(char *sh, char **param) {
 	fprintf(stderr, "\n");
 }
 #endif
-
-// Program exit handler
-void quit() {
-	printf("\n");
-	run = false;
-}
 
 int main(int argc, char *argv[]) {
 	#ifdef DEBUG
@@ -124,7 +118,7 @@ int main(int argc, char *argv[]) {
 		errno = 0;
 
 		if (strcmp(param[0], "exit") == 0 || strcmp(param[0], "quit") == 0) {
-			quit();
+			break;
 		} else if (strcmp(param[0], "history") == 0 || strcmp(param[0], "h") == 0) {
 			print_error(shell, param[0], 2);
 		} else if (strcmp(param[0], "derp") == 0) {
@@ -138,11 +132,40 @@ int main(int argc, char *argv[]) {
 			// returns > 0: we are parent, call wait() and then return to top
 			// returns 0: we are child, do our stuff and exit (DO NOT LET IT AVOID EXIT)
 			//
-			pid_t wat = safefork();
+			//
+			// TODO in backgrounding:
+			// * every time we background a process, we have to throw that process ID into a list
+			// * after every line read, we call waitpid with WNOHANG. for each pid that has returned we can remove it from the list
+			// * at the end of the program, wait on all childs left (blocking)
+			pid_t pid = safefork();
+			if(pid < 0){
+				// error: Seems we have hit our process limit
+			} else if(pid == 0){
+				// I'm a child!! yey
+				// Path lookup
+				// check access(X_OK)
+				//
+				// execve (use the exact function they mention)
+				// in case execve fails to execute, we have to exit ourselves
+				sleep(1);
+				execve(...);
+				exit(137);
+			} else {
+				int status;
+				// advanced edition, waits on specific pid (in case any backgrounded process returns first)
+#ifdef DEBUG
+				fprintf(stderr, "Child forked with pid %i\n", pid);
+#endif
+				waitpid(pid, &status, 0);
+#ifdef DEBUG
+				fprintf(stderr, "Child exited with code %i\n", WEXITSTATUS(status));
+#endif
+				// we are parent, int status; wait(&status); until child is done.. if background, just skip this (when you feel like getting better grades, read up on waitpid()
+			}
 			print_error(shell, param[0], 1);
 		}
 		if (errno) print_error(shell, param[0], 1);
-	} // while (run)
+	}
 
 	return 0;
 }
