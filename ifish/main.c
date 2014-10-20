@@ -26,12 +26,12 @@ struct cmd_history {
 // Set global variables
 char *shell = "ifish";		// Shell name
 bool run = true;		// Main loop
-int cnt = 0;			// Command counter
 
 //  Functions
 
-void prompt(int cmd_cnt) {
-	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cmd_cnt, getenv("PWD") );
+void prompt() {
+	static int cnt = 1;
+	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cnt++, getenv("PWD") );
 }
 
 // Error feedback handler
@@ -42,7 +42,7 @@ void print_error(char *sh, char *cmd, int errtype) {
 			fprintf(stderr, "Hm.. There's a mystery afoot. This simply should not happen!\n");
 			#endif
 			break;
-		case 1:	
+		case 1:
 			printf("%s: %s: command not found\n", sh, cmd);
 			break;
 		case 2:
@@ -50,10 +50,15 @@ void print_error(char *sh, char *cmd, int errtype) {
 			break;
 	}
 }
-
-void print_debug(char *sh, char *cmd) {
-	fprintf(stderr, "%s (DEBUG) - Read line: %s\n", shell, cmd);
+#ifdef DEBUG
+void print_debug(char *sh, char **param) {
+	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
+	for (int i = 0; param[i]; i++) {
+	fprintf(stderr, "%s", param[i]);
+	}
+	fprintf(stderr, "\n");
 }
+#endif
 
 // Program exit handler
 void quit() {
@@ -68,42 +73,44 @@ int main(int argc, char *argv[]) {
 
 	char line[MAX_LENGTH];
 	char *param[21];
-	char *cmd;
+	char * token;
 
 	// Program main loop
-	while (run) {
-		prompt(cnt++);
-		if (!fgets(line, MAX_LENGTH, stdin)) run = false;
+	while (!feof(stdin)) {
+		prompt();
+		if (!fgets(line, MAX_LENGTH, stdin)) break;
 
 		// Parse and execute command
-		if ((cmd = strtok(line, DELIMITERS))) {
-//			char *tmp;
-//			tmp = strtok(cmd, DELIMITERS);
-//			while(tmp != NULL) {
-//				printf("%s\n", tmp);
-//				tmp = strtok(NULL, DELIMITERS);
-//			}
-			int i;
-			for (i = 0; cmd[i] != '\0'; i++) {
-//				printf("TEST:\tcmd[%c] = %s\n", i, cmd[i]);
-				printf("TEST:\t%s\n", line);
-			}
-			#ifdef DEBUG
-				print_debug(shell, cmd);
-			#endif
-			// Reset errors
-			errno = 0;
 
-			if (strcmp(cmd, "exit") == 0 || strcmp(cmd, "quit") == 0) {
-				quit();
-			} else if (strcmp(cmd, "history") == 0 || strcmp(cmd, "h") == 0) {
-				print_error(shell, cmd, 2);
-			} else if (strcmp(cmd, "derp") == 0) {
-				print_error(shell, cmd, 0);
-			} else system(line);
-			if (errno) print_error(shell, cmd, 1);
+		// Get the first token (command)
+		token = strtok(line, DELIMITERS);
+
+		// Iterate throgh the rest (parameters)
+		int i;
+		for (i = 0; token != NULL && i < 20;i++) {
+			#ifdef DEBUG
+				printf("%s --> param[%d]\n", token, i);
+			#endif
+
+			param[i] = token;
+			token = strtok(NULL, DELIMITERS);
 		}
-	}	
+		param[i] = 0;
+		#ifdef DEBUG
+			print_debug(shell, param);
+		#endif
+		// Reset errors
+		errno = 0;
+
+		if (strcmp(param[0], "exit") == 0 || strcmp(param[0], "quit") == 0) {
+			quit();
+		} else if (strcmp(param[0], "history") == 0 || strcmp(param[0], "h") == 0) {
+			print_error(shell, param[0], 2);
+		} else if (strcmp(param[0], "derp") == 0) {
+			print_error(shell, param[0], 0);
+		} else system(line);
+		if (errno) print_error(shell, param[0], 1);
+	} // while (run)
 
 	return 0;
 }

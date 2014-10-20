@@ -4,7 +4,8 @@ SRCS := $(wildcard *.c)
 #OBJS := $(wildcard *.o)
 OBJS =main.o safefork.o
 CC = gcc
-CFLAGS=-O3 -Wall -std=c99 -DDEBUG
+#CFLAGS=-O3 -Wall -std=c99 -DDEBUG
+CFLAGS=-O0 -g3 -Wall -std=c99 -DDEBUG
 
 # Declare "phony targets"
 .PHONY: all clean distclean
