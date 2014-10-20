@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
 	#endif
 
 	char line[MAX_LENGTH];
+	char *param[21];
 	char *cmd;
 
 	// Program main loop
@@ -76,9 +77,20 @@ int main(int argc, char *argv[]) {
 
 		// Parse and execute command
 		if ((cmd = strtok(line, DELIMITERS))) {
-		#ifdef DEBUG
-			print_debug(shell, cmd);
-		#endif
+//			char *tmp;
+//			tmp = strtok(cmd, DELIMITERS);
+//			while(tmp != NULL) {
+//				printf("%s\n", tmp);
+//				tmp = strtok(NULL, DELIMITERS);
+//			}
+			int i;
+			for (i = 0; cmd[i] != '\0'; i++) {
+//				printf("TEST:\tcmd[%c] = %s\n", i, cmd[i]);
+				printf("TEST:\t%s\n", line);
+			}
+			#ifdef DEBUG
+				print_debug(shell, cmd);
+			#endif
 			// Reset errors
 			errno = 0;
 
