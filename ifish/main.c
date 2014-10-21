@@ -179,13 +179,22 @@ void runc(char *line, bool run) {
 			if(!background){
 				waitpid(pid, &status, 0);
 #ifdef DEBUG
-				fprintf(stderr, "Child exited with code %i\n", WEXITSTATUS(status));
+				fprintf(stderr, "Child %i exited with code %i\n", WEXITSTATUS(status), pid);
 #endif
 				// we are parent, int status; wait(&status); until child is done.. if background, just skip this (when you feel like getting better grades, read up on waitpid()
 			}
 		}
 	}
 	if (errno) print_error(shell, param[0], 1);
+}
+
+// Zombie apocalypse deterrent
+void zombie_deterrent() {
+	pid_t pid;
+	int status;
+	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+		fprintf(stderr, "Child %i exited with code %i\n", WEXITSTATUS(status), pid);
+	}
 }
 
 int main(void) {
@@ -200,14 +209,9 @@ int main(void) {
 	while (!feof(stdin) && run == true) {
 		prompt();
 		if (!fgets(line, MAX_LENGTH, stdin)) break;
-		
-		// Zombie apocalypse deterrent
-		while (waitpid(-1, NULL, WNOHANG) > 0);
-
+		zombie_deterrent();
 		runc(line, run);
 	}
-	// Zombie apocalypse deterrent
-	while (waitpid(-1, NULL, WNOHANG) > 0);
-
+	zombie_deterrent();
 	return 0;
 }
