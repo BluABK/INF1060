@@ -16,41 +16,54 @@
 
 // Linked list node
 
+// History node/entry
 struct entry {
-	char *ptr;
 	struct entry *next;
-//	struct node *prev;
+	char *ptr;
 	int length;
 	char *index[15];
 };
 
+// History list (all entries)
 struct history {
-	struct entry *start = NULL;
-	unsigned long long bitmap = 0;
-	char buf[64*8];
+	struct entry *start;
+//	unsigned long long bitmap;
+//	char histbuf[64*8];
 };
 
 
 // Set global variables
+
+// General
 char *shell = "ifish";		// Shell name
+
+// History specific
+history *start = NULL;
+unsigned long long bitmap = 0;
+char histbuf[64*8];
 
 //  Functions
 void history_free() {
-	history.entry = start;
-	while (entry && entry->next && entry->next->next) {
-		entry = entry->next;
+	history *cur = start;
+	while (cur && cur->next && cur->next->next) {
+		cur = cur->next;
 	}
-	history_free2(entry->next);
-	entry->next = NULL;
+	history_free2(cur->next);
+	cur->next = NULL;
 }
 
-history_free2(entry cur) {
+void history_free2(entry *cur) {
 	for (int i = 0; i < cur->length; i++) {
 		int index = cur->index[i];
 		memset(buf + (index * 8), 0, 8);
 		bitmap &= ~(1<<index);
 	}
 	free(cur);
+}
+
+int history_amount() {
+	// TODO: Skeleton function
+	return 1337;
 }
 
 void prompt() {
@@ -233,6 +246,12 @@ int main(void) {
 		zombie_deterrent();
 		runc(line, run);
 	}
+	
+	// Clean up
+
+	// TODO: Implement history cleanup
+	// history_free(); // Until history empty (num_free() == 64)
+
 	zombie_deterrent();
 	return 0;
 }
