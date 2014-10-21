@@ -7,7 +7,7 @@
 #include <stdlib.h>		// getenv, free & friends
 #include <errno.h>		// stderr
 #include <stdbool.h>		// boolean support
-#include <unistd.h>		// UNIX Standard library
+#include <unistd.h>		// UNIX Standard library (__environ)
 #include <string.h>		// strtok
 #include <ctype.h>		// isspace
 #include <sys/wait.h>		// waitpid / wait
@@ -37,6 +37,32 @@ void prompt() {
 	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cnt++, getenv("PWD") );
 }
 
+char *find_path(char *cmd) {
+	static char result[256];
+	char * path = strdup(getenv("PATH"));
+	char *token;
+
+	token = strtok(path, ":");
+
+	while (token) {
+		result[0] = 0;
+#ifdef DEBUG
+		printf("token = %s\n", token);
+#endif
+		strcat(result, token);
+		strcat(result, "/");
+		strcat(result, cmd);
+
+		if (access(result, X_OK) == 0) {
+			free(path);
+			return result;
+		}
+		token = strtok(NULL, ":");
+	}
+	free(path);
+	return NULL;
+}
+
 // Error feedback handler
 void print_error(char *sh, char *cmd, int errtype) {
 	switch(errtype) {
@@ -63,7 +89,7 @@ void print_debug(char *sh, char **param) {
 }
 #endif
 
-int main(int argc, char *argv[]) {
+int main(void) {
 	#ifdef DEBUG
 		printf("Running in debug mode\n");
 	#endif
@@ -71,8 +97,9 @@ int main(int argc, char *argv[]) {
 	char line[MAX_LENGTH];
 	char *param[21];
 	char * token;
+	char *path;
 	bool background = false;
-	int i;
+	int i, job;
 
 	// Program main loop
 	while (!feof(stdin)) {
@@ -142,14 +169,16 @@ int main(int argc, char *argv[]) {
 				// error: Seems we have hit our process limit
 			} else if(pid == 0){
 				// I'm a child!! yey
-				// Path lookup
-				// check access(X_OK)
-				//
-				// execve (use the exact function they mention)
+				path = find_path(param[0]);
+				
 				// in case execve fails to execute, we have to exit ourselves
-				sleep(1);
-				execve(...);
-				exit(137);
+				if (path == NULL) {
+					print_error(shell, param[0], 1);
+					exit(127);
+				} else {
+					job = execve(path, param, __environ);
+					exit(job); 
+				}
 			} else {
 				int status;
 				// advanced edition, waits on specific pid (in case any backgrounded process returns first)
@@ -162,7 +191,6 @@ int main(int argc, char *argv[]) {
 #endif
 				// we are parent, int status; wait(&status); until child is done.. if background, just skip this (when you feel like getting better grades, read up on waitpid()
 			}
-			print_error(shell, param[0], 1);
 		}
 		if (errno) print_error(shell, param[0], 1);
 	}
