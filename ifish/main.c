@@ -47,7 +47,7 @@ char *find_path(char *cmd) {
 	while (token) {
 		result[0] = 0;
 #ifdef DEBUG
-		printf("token = %s\n", token);
+//		printf("token = %s\n", token);
 #endif
 		strcat(result, token);
 		strcat(result, "/");
@@ -83,7 +83,7 @@ void print_error(char *sh, char *cmd, int errtype) {
 void print_debug(char *sh, char **param) {
 	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
 	for (int i = 0; param[i]; i++) {
-	fprintf(stderr, "%s", param[i]);
+	fprintf(stderr, "%s ", param[i]);
 	}
 	fprintf(stderr, "\n");
 }
@@ -117,7 +117,7 @@ void runc(char *line, bool run) {
 	// Iterate throgh the rest (parameters)
 	for (i = 0; token != NULL && i < 20;i++) {
 #ifdef DEBUG
-			printf("%s --> param[%d]\n", token, i);
+//			printf("%s --> param[%d]\n", token, i);
 #endif
 
 		param[i] = token;
@@ -126,7 +126,7 @@ void runc(char *line, bool run) {
 	param[i] = 0;
 #ifdef DEBUG
 	print_debug(shell, param);
-	fprintf(stderr, "param[0] is at %p\n", param[0]);
+//	fprintf(stderr, "param[0] is at %p\n", param[0]);
 #endif
 	// empty lines = ignore
 	if(!param[0]) return;
