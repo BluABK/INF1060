@@ -16,14 +16,18 @@
 
 // Linked list node
 
-struct node {
+struct entry {
 	char *ptr;
-	struct node *next;
-	struct node *prev;
+	struct entry *next;
+//	struct node *prev;
+	int length;
+	char *index[15];
 };
 
-struct cmd_history {
-	struct node *root;
+struct history {
+	struct entry *start = NULL;
+	unsigned long long bitmap = 0;
+	char buf[64*8];
 };
 
 
@@ -31,6 +35,23 @@ struct cmd_history {
 char *shell = "ifish";		// Shell name
 
 //  Functions
+void history_free() {
+	history.entry = start;
+	while (entry && entry->next && entry->next->next) {
+		entry = entry->next;
+	}
+	history_free2(entry->next);
+	entry->next = NULL;
+}
+
+history_free2(entry cur) {
+	for (int i = 0; i < cur->length; i++) {
+		int index = cur->index[i];
+		memset(buf + (index * 8), 0, 8);
+		bitmap &= ~(1<<index);
+	}
+	free(cur);
+}
 
 void prompt() {
 	static int cnt = 1;
