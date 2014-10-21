@@ -17,6 +17,7 @@
 // Linked list node
 
 // History node/entry
+/*
 struct entry {
 	struct entry *next;
 	char *ptr;
@@ -30,7 +31,15 @@ struct history {
 //	unsigned long long bitmap;
 //	char histbuf[64*8];
 };
+*/
 
+typedef struct meta_t meta;
+
+struct meta_t {
+	meta *next;
+	int length;
+	char *index[15];
+};
 
 // Set global variables
 
@@ -38,13 +47,13 @@ struct history {
 char *shell = "ifish";		// Shell name
 
 // History specific
-history *start = NULL;
+meta *start = NULL;
 unsigned long long bitmap = 0;
 char histbuf[64*8];
 
 //  Functions
 void history_free() {
-	history *cur = start;
+	meta *cur = start;
 	while (cur && cur->next && cur->next->next) {
 		cur = cur->next;
 	}
@@ -52,11 +61,11 @@ void history_free() {
 	cur->next = NULL;
 }
 
-void history_free2(entry *cur) {
+void history_free2(meta *cur) {
 	for (int i = 0; i < cur->length; i++) {
 		int index = cur->index[i];
-		memset(buf + (index * 8), 0, 8);
-		bitmap &= ~(1<<index);
+		memset(histbuf + (index * 8), 0, 8);
+		bitmap &= ~(1 << index);
 	}
 	free(cur);
 }
