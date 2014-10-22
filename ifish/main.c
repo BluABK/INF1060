@@ -105,9 +105,8 @@ void history_save(char *cmd) {
 
 meta *history_get(int n) {
 	meta *cur = start;
-	meta last;
 	int pos = 0;
-	while (*cur && pos < n) {
+	while (cur && pos < n) {
 		cur = cur->next;
 		pos++;
 	}
@@ -116,7 +115,7 @@ meta *history_get(int n) {
 
 char *history_meta_str(meta *m) {
 	if (m == NULL) return NULL;
-	static char buf[MAX_LENGTH+1] = 0;
+	static char buf[MAX_LENGTH+1];
 	buf[m->length * 8] = 0;
 	for (int i = 0; i < m->length; i++) {
 		int idx = m->index[i];
