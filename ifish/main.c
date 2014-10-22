@@ -214,19 +214,6 @@ void runc(char *line, bool run) {
 	} else if (strcmp(param[0], "derp") == 0) {
 		print_error(shell, param[0], 0);
 	} else {
-		// lrn 2 run programs!!! stupid shell
-		// TODO: safefork()
-		// TODO: child searches path, checks access() and executes, then DIES!!!
-		// TODO: parent calls wait(&status) to wait for child to DIEEEE
-		// if safefork returns -1: error and continue to top
-		// returns > 0: we are parent, call wait() and then return to top
-		// returns 0: we are child, do our stuff and exit (DO NOT LET IT AVOID EXIT)
-		//
-		//
-		// TODO in backgrounding:
-		// * every time we background a process, we have to throw that process ID into a list
-		// * after every line read, we call waitpid with WNOHANG. for each pid that has returned we can remove it from the list
-		// * at the end of the program, wait on all childs left (blocking)
 		pid_t pid = safefork();
 		if(pid < 0){
 			// error: Seems we have hit our process limit
