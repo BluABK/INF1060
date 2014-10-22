@@ -139,42 +139,18 @@ int history_cnt() {
 }
 
 void print_history(int n) {
-//	printf("meta * = %p\n", history_get(n ));
 	int cnt = 0;
 	meta *list[history_cnt()];
 	char *test = history_meta_str(history_get(n));
 	if (!test) fprintf(stderr, "history_meta_str(n) returned NULL!\n\n **ABORTED**\n");
 	else {
-		// Add all entries to a list/array
 		meta *cur = start;
-/*		for (int i = 0; i < history_cnt(); i++) {
-			list[i] = cur;
-			cur = cur->next;
-		}
-*/
 		// Loop over backwards to get last command first
 		for (int i = (history_cnt() - 1); i > 0; i--) {
-//			printf("%i %s\n", i, history_meta_str( history_get(cur->index[i]) ));
 			printf("%i %s\n", i, history_meta_str(cur));
 			cur = cur->next;
 		}
-/*
-		meta *cur = start;
-		do {
-			cnt++;
-			cur = cur->next;
-		} while (cur);
-
-		printf("%s\n", test);
-*/
-	/*	meta *cur = start;
-		while (test != NULL) {
-			printf("%i %s\n", cnt, test);
-			test = test->next;
-			cnt++;
-		}*/
 	}
-//	else printf("offset %i: %s\n", n, test);
 } 
 
 void prompt() {
@@ -213,7 +189,7 @@ void print_error(const char *sh, char *cmd, int errtype) {
 	switch(errtype) {
 		case 0:
 			#ifdef DEBUG
-			fprintf(stderr, "Hm.. There's a mystery afoot. This simply should not happen!\n");
+			fprintf(stderr, "Error: 'errtype' was 0\n");
 			#endif
 			break;
 		case 1:
@@ -228,9 +204,7 @@ void print_error(const char *sh, char *cmd, int errtype) {
 #ifdef DEBUG
 void print_debug_readline(const char *sh, char *line) {
 	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
-//	for (int i = 0; param[i]; i++) {
 		fprintf(stderr, "%s ", line);
-//	}
 	fprintf(stderr, "\n");
 }
 
