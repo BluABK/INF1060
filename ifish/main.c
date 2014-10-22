@@ -95,6 +95,30 @@ void history_save(char **cmd) {
 #endif
 	}
 }
+
+void print_history(char **param) {
+	if (param[1] != NULL) {
+		// print history given n
+	} else {
+		// Print entire history table
+		meta *cur = start, *prev = NULL;
+		if(!cur) return; // If null, nothing to do
+		while (cur->next) {
+			prev = cur;
+			cur = cur->next;
+		}
+		for (int i = 0; i < cur->length; i++) {
+			int index = cur->index[i];
+			memset(histbuf + (index * 8), 0, 8);
+			bitmap &= ~(1 << index);
+		}
+		free(cur);
+		// if prev not null, null prev.next
+		if (prev) prev->next = NULL;
+		// prev was null (first node deleted)
+		else start = NULL;
+	}
+}
 void prompt() {
 	static int cnt = 1;
 	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cnt++, getenv("PWD") );
@@ -210,7 +234,8 @@ void runc(char *line, bool run) {
 		run = false;
 		return;
 	} else if (strcmp(param[0], "history") == 0 || strcmp(param[0], "h") == 0) {
-		print_error(shell, param[0], 2);
+//		print_error(shell, param[0], 2);
+		print_history(param);
 	} else if (strcmp(param[0], "derp") == 0) {
 		print_error(shell, param[0], 0);
 	} else {
