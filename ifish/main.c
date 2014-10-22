@@ -74,7 +74,6 @@ int min (int a, int b) {
 void history_save(char *cmd) {
 	meta *new = malloc(sizeof(meta));
 	int len = strlen(cmd);
-
 	if (len % 8) {
 		len += 8 - (len % 8);
 	}
@@ -87,7 +86,14 @@ void history_save(char *cmd) {
 
 	for (unsigned long long i = 0; i < 64 && len > 0; i++) {
 		if ( bitmap & (1 << i) ) continue;
-		memcpy(histbuf + (i * 8), cmd, min(8, strlen(cmd) + 1));
+
+		// copy from memory area 'cmd' to memory area 'histbuf'
+		// If string is short enough, add \0, if not cut it off on 8
+		if (strlen(cmd) < 8) memcpy(histbuf + (i * 8), cmd, strlen(cmd) +1);
+		else memcpy(histbuf + (i * 8), cmd, 8);
+		
+		// Offset cmd by own length or maximum 8
+		cmd += min(8, strlen(cmd));
 		bitmap = (1 << i);
 		new->index[new->length++] = i;
 #ifdef DEBUG
@@ -157,7 +163,7 @@ char *find_path(char *cmd) {
 }
 
 // Error feedback handler
-void print_error(char *sh, char *cmd, int errtype) {
+void print_error(const char *sh, char *cmd, int errtype) {
 	switch(errtype) {
 		case 0:
 			#ifdef DEBUG
@@ -173,7 +179,7 @@ void print_error(char *sh, char *cmd, int errtype) {
 	}
 }
 #ifdef DEBUG
-void print_debug(char *sh, char **param) {
+void print_debug(const char *sh, char **param) {
 	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
 	for (int i = 0; param[i]; i++) {
 	fprintf(stderr, "%s ", param[i]);
