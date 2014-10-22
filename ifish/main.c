@@ -138,9 +138,16 @@ int history_cnt() {
 	return cnt;
 }
 
-void print_history(int n) {
-	int cnt = 0;
-	meta *list[history_cnt()];
+void history_execute(int n) {
+
+}
+
+void history_delete(int n) {
+
+}
+
+void print_history() {
+	int n = 0;
 	char *test = history_meta_str(history_get(n));
 	if (!test) fprintf(stderr, "history_meta_str(n) returned NULL!\n\n **ABORTED**\n");
 	else {
@@ -167,9 +174,6 @@ char *find_path(char *cmd) {
 
 	while (token) {
 		result[0] = 0;
-#ifdef DEBUG
-//		printf("token = %s\n", token);
-#endif
 		strcat(result, token);
 		strcat(result, "/");
 		strcat(result, cmd);
@@ -201,6 +205,7 @@ void print_error(const char *sh, char *cmd, int errtype) {
 	}
 }
 
+// Debug feedback handlers
 #ifdef DEBUG
 void print_debug_readline(const char *sh, char *line) {
 	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
@@ -244,10 +249,6 @@ void runc(char *line, bool run) {
 
 	// Iterate throgh the rest (parameters)
 	for (i = 0; token != NULL && i < 20;i++) {
-#ifdef DEBUG
-//			printf("%s --> param[%d]\n", token, i);
-#endif
-
 		param[i] = token;
 		token = strtok(NULL, DELIMITERS);
 	}
@@ -272,8 +273,9 @@ void runc(char *line, bool run) {
 		run = false;
 		return;
 	} else if (strcmp(param[0], "history") == 0 || strcmp(param[0], "h") == 0) {
-		if (param[1] != NULL) print_history(atoi(param[1]));
-		else print_history(0);
+		if (strcmp(param[1], "-d")) history_delete(atoi(param[2]));
+		else if (param[1] != NULL) history_execute(atoi(param[1]));
+		else print_history();
 	} else if (strcmp(param[0], "derp") == 0) {
 		print_error(shell, param[0], 0);
 	} else {
