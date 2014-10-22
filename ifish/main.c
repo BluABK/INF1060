@@ -84,7 +84,7 @@ void history_save(char *cmd) {
 		history_free();
 	}
 
-	for (unsigned long long i = 0; i < 64 && len > 0; i++) {
+	for (unsigned long long i = 0; i < 64 && *cmd; i++) {
 		if ( bitmap & (1 << i) ) continue;
 
 		// copy from memory area 'cmd' to memory area 'histbuf'
