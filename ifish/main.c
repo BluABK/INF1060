@@ -42,7 +42,7 @@ void history_free() {
 		prev = cur;
 		cur = cur->next;
 	}
-	for (unsigned long long i = 0; i < cur->length; i++) {
+	for (int i = 0; i < cur->length; i++) {
 		int index = cur->index[i];
 		memset(histbuf + (index * 8), 0, 8);
 		bitmap &= ~(1ULL << index);
@@ -59,7 +59,6 @@ int history_amount_free() {
 	int cnt = 0;
 	for (int i = 0; i < 64; i++) {
 		if ((bitmap &(1 << i)) == 0) {
-//			printf("%lli ", cnt);
 			cnt++;
 		}
 	}
@@ -73,7 +72,7 @@ int min (int a, int b) {
 
 void history_save(char *cmd) {
 	meta *new = malloc(sizeof(meta));
-	unsigned long long len = strlen(cmd);
+	int len = strlen(cmd);
 	if (len % 8) {
 		len += 8 - (len % 8);
 	}
@@ -84,7 +83,7 @@ void history_save(char *cmd) {
 		history_free();
 	}
 
-	for (unsigned long long i = 0; i < 64 && *cmd && len > 0; i++) {
+	for (int i = 0; i < 64 && *cmd && len > 0; i++) {
 		if ( bitmap & (1ULL << i) ) continue;
 
 		// copy from memory area 'cmd' to memory area 'histbuf'
@@ -98,7 +97,7 @@ void history_save(char *cmd) {
 		new->index[new->length++] = i;
 		len--;
 #ifdef DEBUG
-		fprintf(stderr, "new->index = %c", *new->index);
+		fprintf(stderr, "new->index[%i] = %i\n", new->length-1, i);
 #endif
 	}
 	new->next = start;
@@ -107,12 +106,10 @@ void history_save(char *cmd) {
 
 meta *history_get(int n) {
 	meta *cur = start;
-	printf("DEBUG LEVEL > 9000:\thistory_get starting at cur=%p with n=%i\n", cur, n);
 	int pos = 0;
 	while (cur && pos < n) {
 		cur = cur->next;
 		pos++;
-		printf("DEBUG LEVEL > 9000:\thistory_get iteration: cur=%p pos=%i n=%i\n", cur, pos, n);
 	}
 	return cur;
 }
@@ -151,11 +148,9 @@ void print_history() {
 	char *test = history_meta_str(history_get(n));
 	if (!test) fprintf(stderr, "history_meta_str(n) returned NULL!\n\n **ABORTED**\n");
 	else {
-		meta *cur = start;
 		// Loop over backwards to get last command first
 		for (int i = (history_cnt() - 1); i > 0; i--) {
-			printf("%i %s\n", i, history_meta_str(cur));
-			cur = cur->next;
+			printf("%i %s\n", i, history_meta_str(history_get(i)));
 		}
 	}
 } 
@@ -207,13 +202,13 @@ void print_error(const char *sh, char *cmd, int errtype) {
 
 // Debug feedback handlers
 #ifdef DEBUG
-void print_debug_readline(const char *sh, char *line) {
+void print_debug_readline(char *line) {
 	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
-		fprintf(stderr, "%s ", line);
+	fprintf(stderr, "%s ", line);
 	fprintf(stderr, "\n");
 }
 
-void print_debug_param(const char *sh, char **param) {
+void print_debug_param(char **param) {
 	fprintf(stderr, "%s (DEBUG) - : ", shell);
 	for (int i = 0; param[i]; i++) {
 		fprintf(stderr, "param[%i] = '%s', ", i, param[i]);
@@ -222,9 +217,9 @@ void print_debug_param(const char *sh, char **param) {
 }
 #endif
 
-void runc(char *line, bool run) {
+int runc(char *line) {
 	char *param[21];
-	char * token;
+	char *token;
 	char *path;
 	bool background = false;
 	int i, job;
@@ -241,6 +236,10 @@ void runc(char *line, bool run) {
 		else break;
 	}
 #ifdef DEBUG
+	print_debug_readline(line);
+#endif
+	history_save(line);
+#ifdef DEBUG
 	fprintf(stderr, "Background? %s\n", background ? "yes" : "no");
 #endif
 
@@ -254,11 +253,11 @@ void runc(char *line, bool run) {
 	}
 	param[i] = 0;
 #ifdef DEBUG
-	print_debug_param(shell, param);
+	print_debug_param(param);
 //	fprintf(stderr, "param[0] is at %p\n", param[0]);
 #endif
 	// empty lines = ignore
-	if(!param[0]) return;
+	if(!param[0]) return 1;
 
 	// Reset errors
 	errno = 0;
@@ -270,12 +269,14 @@ void runc(char *line, bool run) {
 	fprintf(stderr, "' to history\n");
 #endif
 	if (strcmp(param[0], "exit") == 0 || strcmp(param[0], "quit") == 0) {
-		run = false;
-		return;
+		return 0;
 	} else if (strcmp(param[0], "history") == 0 || strcmp(param[0], "h") == 0) {
-		if (strcmp(param[1], "-d")) history_delete(atoi(param[2]));
-		else if (param[1] != NULL) history_execute(atoi(param[1]));
-		else print_history();
+		if (param[1] && strcmp(param[1], "-d"))
+			history_delete(atoi(param[2]));
+		else if (param[1])
+			history_execute(atoi(param[1]));
+		else
+			print_history();
 	} else if (strcmp(param[0], "derp") == 0) {
 		print_error(shell, param[0], 0);
 	} else {
@@ -310,15 +311,7 @@ void runc(char *line, bool run) {
 		}
 	}
 	if (errno) print_error(shell, param[0], 1);
-}
-
-// Zombie apocalypse deterrent
-void zombie_deterrent() {
-	pid_t pid;
-	int status;
-	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-		fprintf(stderr, "Child %i exited with code %i\n", WEXITSTATUS(status), pid);
-	}
+	return 1;
 }
 
 int main(void) {
@@ -327,23 +320,14 @@ int main(void) {
 	#endif
 
 	char line[MAX_LENGTH];
-	bool run = true;
-
+	signal(SIGCHLD, SIG_IGN);
 	// Program main loop
-	while (!feof(stdin) && run == true) {
+	while (!feof(stdin)) {
 		prompt();
 		if (!fgets(line, MAX_LENGTH, stdin)) break;
-		zombie_deterrent();
-		print_debug_readline(shell, line);
-		history_save(line);
-		runc(line, run);
+		if(!runc(line)) break;
 	}
-	
-	// Clean up
-
 	// TODO: Implement history cleanup
 	// history_free(); // Until history empty (num_free() == 64)
-
-	zombie_deterrent();
 	return 0;
 }
