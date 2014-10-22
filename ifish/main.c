@@ -58,7 +58,10 @@ void history_free() {
 int history_amount_free() {
 	long long cnt = 0;
 	for (int i = 0; i < 64; i++) {
-		if (bitmap && (1 << i) == 0) cnt++;
+		if (bitmap && (1 << i) == 0) {
+			printf("cnt: %lli i: %i", cnt, i);
+			cnt++;
+		}
 	}
 	return cnt;
 }
@@ -86,7 +89,7 @@ void history_save(char **cmd) {
 		if (bitmap && (1 << i)) continue;
 		memcpy(histbuf + (i * 8), *cmd, min(8, strlen(*cmd) + 1));
 		bitmap = ((unsigned long long) 1 << i);
-		new->index[new->length++];
+		new->index[new->length++] = i;
 #ifdef DEBUG
 		fprintf(stderr, "new->index = %c", *new->index);
 #endif
