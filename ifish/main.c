@@ -70,8 +70,11 @@ history_save(char *cmd) {
 }
 
 int history_amount_free() {
-	// TODO: Skeleton function
-	return 1337;
+	long long cnt = 0;
+	for (int i = 0; i < 64; i++) {
+		if (bitmap && (1 << i) == 0) cnt++;
+	}
+	return cnt;
 }
 
 void prompt() {
