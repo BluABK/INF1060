@@ -1,7 +1,6 @@
 #define MAX_LENGTH 120		// Cut off input longer than this amount
 #define DELIMITERS " \t\r\n"
 #define _GNU_SOURCE		// Define extension for strtok/string.h when forcing -std=c99
-//#define DEBUG			// Ahh, verbosity..
 
 #include <stdio.h>
 #include <stdlib.h>		// getenv, free & friends
@@ -15,23 +14,6 @@
 #include "safefork.h"
 
 // Linked list node
-
-// History node/entry
-/*
-struct entry {
-	struct entry *next;
-	char *ptr;
-	int length;
-	char *index[15];
-};
-
-// History list (all entries)
-struct history {
-	struct entry *start;
-//	unsigned long long bitmap;
-//	char histbuf[64*8];
-};
-*/
 
 typedef struct meta_t meta;
 
