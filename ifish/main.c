@@ -73,19 +73,19 @@ int min (int a, int b) {
 
 void history_save(char *cmd) {
 	meta *new = malloc(sizeof(meta));
-	int len = strlen(cmd);
+	unsigned long long len = strlen(cmd);
 	if (len % 8) {
 		len += 8 - (len % 8);
 	}
 	len = len/8;
-	if (len > 15) len = 15;
+	if (len > MAX_LENGTH) len = MAX_LENGTH;
 
 	while (history_amount_free() < len) {
 		history_free();
 	}
 
-	for (int i = 0; i < 64 && *cmd; i++) {
-		if ( bitmap & (1 << i) ) continue;
+	for (unsigned long long i = 0; i < 64 && *cmd && len > 0; i++) {
+		if ( bitmap & (1ULL << i) ) continue;
 
 		// copy from memory area 'cmd' to memory area 'histbuf'
 		// If string is short enough, add \0, if not cut it off on 8
@@ -94,8 +94,9 @@ void history_save(char *cmd) {
 		
 		// Offset cmd by own length or maximum 8
 		cmd += min(8, strlen(cmd));
-		bitmap = (1ULL << i);
+		bitmap |= (1ULL << i);
 		new->index[new->length++] = i;
+		len--;
 #ifdef DEBUG
 		fprintf(stderr, "new->index = %c", *new->index);
 #endif
