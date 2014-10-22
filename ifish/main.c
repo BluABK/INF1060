@@ -94,7 +94,7 @@ void history_save(char *cmd) {
 		
 		// Offset cmd by own length or maximum 8
 		cmd += min(8, strlen(cmd));
-		bitmap = (1 << i);
+		bitmap = (1ULL << i);
 		new->index[new->length++] = i;
 #ifdef DEBUG
 		fprintf(stderr, "new->index = %c", *new->index);
