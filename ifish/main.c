@@ -125,7 +125,10 @@ char *history_meta_str(meta *m) {
 }
 
 void print_history(int n) {
-	printf("%s\n", history_meta_str(history_get(n)));
+	printf("meta * = %p\n", history_get(n ));
+	char *test = history_meta_str(history_get(n));
+	if (!test) fprintf(stderr, "history_meta_str(n) returned NULL... FUCK THIS!\n\n **ABORTED**\n");
+	else printf("%s\n", test);
 } 
 
 void prompt() {
@@ -240,7 +243,8 @@ void runc(char *line, bool run) {
 		run = false;
 		return;
 	} else if (strcmp(param[0], "history") == 0 || strcmp(param[0], "h") == 0) {
-		print_history(atoi(param[1]));
+		if (param[1] != NULL) print_history(atoi(param[1]));
+		else print_history(0);
 	} else if (strcmp(param[0], "derp") == 0) {
 		print_error(shell, param[0], 0);
 	} else {
