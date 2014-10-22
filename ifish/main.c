@@ -54,7 +54,22 @@ void history_free() {
 	else start = NULL;
 }
 
-int history_amount() {
+history_save(char *cmd) {
+	meta *new = malloc(sizeof(meta));
+	int len = strlen(cmd);
+
+	if (len % 8) {
+		len += 8 - (len % 8);
+	}
+	len = len/8;
+	if (len > 15) len = 15;
+
+	while (history_amount_free() < len) {
+		history_free();
+	}
+}
+
+int history_amount_free() {
 	// TODO: Skeleton function
 	return 1337;
 }
