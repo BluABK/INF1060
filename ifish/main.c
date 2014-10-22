@@ -21,7 +21,7 @@ struct meta_t {
 	meta *next;
 	meta *prev;
 	int length;
-	char *index[15];
+	char index[15];
 };
 
 // Set global variables
@@ -54,7 +54,21 @@ void history_free() {
 	else start = NULL;
 }
 
-history_save(char *cmd) {
+
+int history_amount_free() {
+	long long cnt = 0;
+	for (int i = 0; i < 64; i++) {
+		if (bitmap && (1 << i) == 0) cnt++;
+	}
+	return cnt;
+}
+
+int min (int a, int b) {
+	if (a < b) return a;
+	return b;
+}
+
+void history_save(char *cmd) {
 	meta *new = malloc(sizeof(meta));
 	int len = strlen(cmd);
 
@@ -70,25 +84,11 @@ history_save(char *cmd) {
 
 	for (int i = 0; i < 64 && len > 0; i++) {
 		if (bitmap && (1 << i)) continue;
-		memcpy(histbuf+(i * 8), cmd, min(8, strlen(cmd) + 1));
-		bitmap l = ((unsigned long long) l << i);
+		memcpy(histbuf + (i * 8), cmd, min(8, strlen(cmd) + 1));
+		bitmap = ((unsigned long long) 1 << i);
 		new->index[new->length++];
 	}
 }
-
-int history_amount_free() {
-	long long cnt = 0;
-	for (int i = 0; i < 64; i++) {
-		if (bitmap && (1 << i) == 0) cnt++;
-	}
-	return cnt;
-}
-
-int min (int a, int b) {
-	if (a < b) return a;
-	return b;
-}
-
 void prompt() {
 	static int cnt = 1;
 	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cnt++, getenv("PWD") );
