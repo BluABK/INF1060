@@ -9,8 +9,8 @@ extern int errno;
 
 static int n_processes(void)
 {
-//  return system("exit `/bin/ps | /store/bin/wc -l`")/256;
-  return system("exit `/bin/ps | /usr/bin/wc -l`")/256;
+//  Why not this?
+  return system("exit `ps | wc -l`")/256;
 }
 
 

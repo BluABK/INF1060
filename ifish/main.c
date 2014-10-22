@@ -259,8 +259,6 @@ int runc(char *line) {
 	// empty lines = ignore
 	if(!param[0]) return 1;
 
-	// Reset errors
-	errno = 0;
 #ifdef DEBUG	
 	fprintf(stderr, "Saving '");
 	for (int i = 0; param[i] != '\0'; i++) {
@@ -277,8 +275,6 @@ int runc(char *line) {
 			history_execute(atoi(param[1]));
 		else
 			print_history();
-	} else if (strcmp(param[0], "derp") == 0) {
-		print_error(shell, param[0], 0);
 	} else {
 		pid_t pid = safefork();
 		if(pid < 0){
@@ -310,7 +306,6 @@ int runc(char *line) {
 			}
 		}
 	}
-	if (errno) print_error(shell, param[0], 1);
 	return 1;
 }
 
