@@ -67,6 +67,13 @@ history_save(char *cmd) {
 	while (history_amount_free() < len) {
 		history_free();
 	}
+
+	for (int i = 0; i < 64 && len > 0; i++) {
+		if (bitmap && (1 << i)) continue;
+		memcpy(histbuf+(i * 8), cmd, min(8, strlen(cmd) + 1));
+		bitmap l = ((unsigned long long) l << i);
+		new->index[new->length++];
+	}
 }
 
 int history_amount_free() {
@@ -75,6 +82,11 @@ int history_amount_free() {
 		if (bitmap && (1 << i) == 0) cnt++;
 	}
 	return cnt;
+}
+
+int min (int a, int b) {
+	if (a < b) return a;
+	return b;
 }
 
 void prompt() {
