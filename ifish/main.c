@@ -27,7 +27,7 @@ struct meta_t {
 // Set global variables
 
 // General
-char *shell = "ifish";		// Shell name
+const char *shell = "ifish";		// Shell name
 
 // History specific
 meta *start = NULL;
@@ -42,10 +42,10 @@ void history_free() {
 		prev = cur;
 		cur = cur->next;
 	}
-	for (int i = 0; i < cur->length; i++) {
+	for (unsigned long long i = 0; i < cur->length; i++) {
 		int index = cur->index[i];
 		memset(histbuf + (index * 8), 0, 8);
-		bitmap &= ~(1 << index);
+		bitmap &= ~(1ULL << index);
 	}
 	free(cur);
 	// if prev not null, null prev.next
