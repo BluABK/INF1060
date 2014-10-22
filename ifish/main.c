@@ -68,9 +68,9 @@ int min (int a, int b) {
 	return b;
 }
 
-void history_save(char *cmd) {
+void history_save(char **cmd) {
 	meta *new = malloc(sizeof(meta));
-	int len = strlen(cmd);
+	int len = strlen(*cmd);
 
 	if (len % 8) {
 		len += 8 - (len % 8);
@@ -84,9 +84,12 @@ void history_save(char *cmd) {
 
 	for (int i = 0; i < 64 && len > 0; i++) {
 		if (bitmap && (1 << i)) continue;
-		memcpy(histbuf + (i * 8), cmd, min(8, strlen(cmd) + 1));
+		memcpy(histbuf + (i * 8), *cmd, min(8, strlen(*cmd) + 1));
 		bitmap = ((unsigned long long) 1 << i);
 		new->index[new->length++];
+#ifdef DEBUG
+		fprintf(stderr, "new->index = %c", *new->index);
+#endif
 	}
 }
 void prompt() {
@@ -190,7 +193,16 @@ void runc(char *line, bool run) {
 
 	// Reset errors
 	errno = 0;
-
+#ifdef DEBUG	
+	fprintf(stderr, "Saving '");
+	for (int i = 0; param[i] != '\0'; i++) {
+		fprintf(stderr, "%s ", param[i]);
+	}
+	fprintf(stderr, "' to history\n");
+#endif
+	// Save to history
+	history_save(param);
+	
 	if (strcmp(param[0], "exit") == 0 || strcmp(param[0], "quit") == 0) {
 		run = false;
 		return;
