@@ -73,8 +73,6 @@ int min (int a, int b) {
 
 void history_save(char *cmd) {
 	meta *new = malloc(sizeof(meta));
-	new->next = start;
-	start = new;
 	unsigned long long len = strlen(cmd);
 	if (len % 8) {
 		len += 8 - (len % 8);
@@ -109,10 +107,12 @@ void history_save(char *cmd) {
 
 meta *history_get(int n) {
 	meta *cur = start;
+	printf("DEBUG LEVEL > 9000:\thistory_get starting at cur=%p with n=%i\n", cur, n);
 	int pos = 0;
 	while (cur && pos < n) {
 		cur = cur->next;
 		pos++;
+		printf("DEBUG LEVEL > 9000:\thistory_get iteration: cur=%p pos=%i n=%i\n", cur, pos, n);
 	}
 	return cur;
 }
@@ -128,11 +128,53 @@ char *history_meta_str(meta *m) {
 	return buf;
 }
 
+int history_cnt() {
+	meta *cur = start;
+	int cnt = 0;
+	while(cur){
+		cur = cur->next;
+		cnt++;
+	}
+	return cnt;
+}
+
 void print_history(int n) {
 //	printf("meta * = %p\n", history_get(n ));
+	int cnt = 0;
+	meta *list[history_cnt()];
 	char *test = history_meta_str(history_get(n));
-	if (!test) fprintf(stderr, "history_meta_str(n) returned NULL... FUCK THIS!\n\n **ABORTED**\n");
-	else printf("%s\n", test);
+	if (!test) fprintf(stderr, "history_meta_str(n) returned NULL!\n\n **ABORTED**\n");
+	else {
+		// Add all entries to a list/array
+		meta *cur = start;
+/*		for (int i = 0; i < history_cnt(); i++) {
+			list[i] = cur;
+			cur = cur->next;
+		}
+*/
+		// Loop over backwards to get last command first
+		for (int i = (history_cnt() - 1); i > 0; i--) {
+//			printf("%i %s\n", i, history_meta_str( history_get(cur->index[i]) ));
+			printf("%i %s\n", i, history_meta_str(cur));
+			cur = cur->next;
+		}
+/*
+		meta *cur = start;
+		do {
+			cnt++;
+			cur = cur->next;
+		} while (cur);
+
+		printf("%s\n", test);
+*/
+	/*	meta *cur = start;
+		while (test != NULL) {
+			printf("%i %s\n", cnt, test);
+			test = test->next;
+			cnt++;
+		}*/
+	}
+//	else printf("offset %i: %s\n", n, test);
 } 
 
 void prompt() {
@@ -182,6 +224,7 @@ void print_error(const char *sh, char *cmd, int errtype) {
 			break;
 	}
 }
+
 #ifdef DEBUG
 void print_debug_readline(const char *sh, char *line) {
 	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
@@ -286,7 +329,7 @@ void runc(char *line, bool run) {
 #ifdef DEBUG
 				fprintf(stderr, "Child %i exited with code %i\n", WEXITSTATUS(status), pid);
 #endif
-				// we are parent, int status; wait(&status); until child is done.. if background, just skip this (when you feel like getting better grades, read up on waitpid()
+				//We are parent, int status; wait(&status); until child is done.. if background, just skip this
 			}
 		}
 	}
