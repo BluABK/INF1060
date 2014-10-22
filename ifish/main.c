@@ -56,7 +56,7 @@ void history_free() {
 
 
 int history_amount_free() {
-	long long cnt = 0;
+	int cnt = 0;
 	for (int i = 0; i < 64; i++) {
 		if ((bitmap &(1 << i)) == 0) {
 //			printf("%lli ", cnt);
