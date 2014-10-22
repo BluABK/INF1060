@@ -37,6 +37,7 @@ typedef struct meta_t meta;
 
 struct meta_t {
 	meta *next;
+	meta *prev;
 	int length;
 	char *index[15];
 };
@@ -53,21 +54,22 @@ char histbuf[64*8];
 
 //  Functions
 void history_free() {
-	meta *cur = start;
-	while (cur && cur->next && cur->next->next) {
+	meta *cur = start, *prev = NULL;
+	if(!cur) return; // If null, nothing to do
+	while (cur->next) {
+		prev = cur;
 		cur = cur->next;
 	}
-	history_free2(cur->next);
-	cur->next = NULL;
-}
-
-void history_free2(meta *cur) {
 	for (int i = 0; i < cur->length; i++) {
 		int index = cur->index[i];
 		memset(histbuf + (index * 8), 0, 8);
 		bitmap &= ~(1 << index);
 	}
 	free(cur);
+	// if prev not null, null prev.next
+	if (prev) prev->next = NULL;
+	// prev was null (first node deleted)
+	else start = NULL;
 }
 
 int history_amount() {
