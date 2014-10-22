@@ -71,9 +71,9 @@ int min (int a, int b) {
 	return b;
 }
 
-void history_save(char **cmd) {
+void history_save(char *cmd) {
 	meta *new = malloc(sizeof(meta));
-	int len = strlen(*cmd);
+	int len = strlen(cmd);
 
 	if (len % 8) {
 		len += 8 - (len % 8);
@@ -85,10 +85,10 @@ void history_save(char **cmd) {
 		history_free();
 	}
 
-	for (int i = 0; i < 64 && len > 0; i++) {
-		if (bitmap && (1 << i)) continue;
-		memcpy(histbuf + (i * 8), *cmd, min(8, strlen(*cmd) + 1));
-		bitmap = (unsigned long long) (1 << i);
+	for (unsigned long long i = 0; i < 64 && len > 0; i++) {
+		if ( bitmap & (1 << i) ) continue;
+		memcpy(histbuf + (i * 8), cmd, min(8, strlen(cmd) + 1));
+		bitmap = (1 << i);
 		new->index[new->length++] = i;
 #ifdef DEBUG
 		fprintf(stderr, "new->index = %c", *new->index);
@@ -97,7 +97,7 @@ void history_save(char **cmd) {
 }
 
 void print_history(char **param) {
-	if (param[1] != NULL) {
+/*	if (param[1] != NULL) {
 		// print history given n
 	} else {
 		// Print entire history table
@@ -109,16 +109,22 @@ void print_history(char **param) {
 		}
 		for (int i = 0; i < cur->length; i++) {
 			int index = cur->index[i];
-			memset(histbuf + (index * 8), 0, 8);
-			bitmap &= ~(1 << index);
+		//	memset(histbuf + (index * 8), 0, 8);
+		//	bitmap &= ~(1 << index);
+			printf("\t%i: ", index);
+			for (int j = 0; j != '\0'; j++) {
+//				printf("%s", cur->);
+				printf("blah");
+			}
 		}
-		free(cur);
+//		free(cur);
 		// if prev not null, null prev.next
 		if (prev) prev->next = NULL;
 		// prev was null (first node deleted)
 		else start = NULL;
-	}
-}
+	} */
+} 
+
 void prompt() {
 	static int cnt = 1;
 	printf( "%s@%s %d:%s> ", getenv("USER"), shell, cnt++, getenv("PWD") );
@@ -227,9 +233,6 @@ void runc(char *line, bool run) {
 	}
 	fprintf(stderr, "' to history\n");
 #endif
-	// Save to history
-	history_save(param);
-	
 	if (strcmp(param[0], "exit") == 0 || strcmp(param[0], "quit") == 0) {
 		run = false;
 		return;
@@ -294,6 +297,7 @@ int main(void) {
 		prompt();
 		if (!fgets(line, MAX_LENGTH, stdin)) break;
 		zombie_deterrent();
+		history_save(line);
 		runc(line, run);
 	}
 	
