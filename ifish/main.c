@@ -73,6 +73,8 @@ int min (int a, int b) {
 
 void history_save(char *cmd) {
 	meta *new = malloc(sizeof(meta));
+	new->next = start;
+	start = new;
 	unsigned long long len = strlen(cmd);
 	if (len % 8) {
 		len += 8 - (len % 8);
@@ -101,6 +103,8 @@ void history_save(char *cmd) {
 		fprintf(stderr, "new->index = %c", *new->index);
 #endif
 	}
+	new->next = start;
+	start = new;
 }
 
 meta *history_get(int n) {
@@ -125,7 +129,7 @@ char *history_meta_str(meta *m) {
 }
 
 void print_history(int n) {
-	printf("meta * = %p\n", history_get(n ));
+//	printf("meta * = %p\n", history_get(n ));
 	char *test = history_meta_str(history_get(n));
 	if (!test) fprintf(stderr, "history_meta_str(n) returned NULL... FUCK THIS!\n\n **ABORTED**\n");
 	else printf("%s\n", test);
@@ -179,10 +183,18 @@ void print_error(const char *sh, char *cmd, int errtype) {
 	}
 }
 #ifdef DEBUG
-void print_debug(const char *sh, char **param) {
+void print_debug_readline(const char *sh, char *line) {
 	fprintf(stderr, "%s (DEBUG) - Read line: ", shell);
+//	for (int i = 0; param[i]; i++) {
+		fprintf(stderr, "%s ", line);
+//	}
+	fprintf(stderr, "\n");
+}
+
+void print_debug_param(const char *sh, char **param) {
+	fprintf(stderr, "%s (DEBUG) - : ", shell);
 	for (int i = 0; param[i]; i++) {
-	fprintf(stderr, "%s ", param[i]);
+		fprintf(stderr, "param[%i] = '%s', ", i, param[i]);
 	}
 	fprintf(stderr, "\n");
 }
@@ -224,7 +236,7 @@ void runc(char *line, bool run) {
 	}
 	param[i] = 0;
 #ifdef DEBUG
-	print_debug(shell, param);
+	print_debug_param(shell, param);
 //	fprintf(stderr, "param[0] is at %p\n", param[0]);
 #endif
 	// empty lines = ignore
@@ -303,6 +315,7 @@ int main(void) {
 		prompt();
 		if (!fgets(line, MAX_LENGTH, stdin)) break;
 		zombie_deterrent();
+		print_debug_readline(shell, line);
 		history_save(line);
 		runc(line, run);
 	}
