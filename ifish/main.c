@@ -254,7 +254,6 @@ int runc(char *line) {
 	param[i] = 0;
 #ifdef DEBUG
 	print_debug_param(param);
-//	fprintf(stderr, "param[0] is at %p\n", param[0]);
 #endif
 	// empty lines = ignore
 	if(!param[0]) return 1;
@@ -279,6 +278,7 @@ int runc(char *line) {
 		pid_t pid = safefork();
 		if(pid < 0){
 			// error: Seems we have hit our process limit
+			fprintf(stderr, "%s: safefork() = -1\n", shell);
 		} else if(pid == 0){
 			// I'm a child!! yey
 			path = find_path(param[0]);
@@ -294,15 +294,14 @@ int runc(char *line) {
 		} else {
 			int status;
 			// advanced edition, waits on specific pid (in case any backgrounded process returns first)
-#ifdef DEBUG
-			fprintf(stderr, "Child forked with pid %i\n", pid);
-#endif
 			if(!background){
+				//We are parent, int status; wait(&status); until child is done.. if background, just skip this
 				waitpid(pid, &status, 0);
 #ifdef DEBUG
 				fprintf(stderr, "Child %i exited with code %i\n", WEXITSTATUS(status), pid);
 #endif
-				//We are parent, int status; wait(&status); until child is done.. if background, just skip this
+			} else {
+				fprintf(stderr, "Child forked with pid %i\n", pid);
 			}
 		}
 	}
