@@ -103,33 +103,31 @@ void history_save(char *cmd) {
 	}
 }
 
-void print_history(char **param) {
-/*	if (param[1] != NULL) {
-		// print history given n
-	} else {
-		// Print entire history table
-		meta *cur = start, *prev = NULL;
-		if(!cur) return; // If null, nothing to do
-		while (cur->next) {
-			prev = cur;
-			cur = cur->next;
-		}
-		for (int i = 0; i < cur->length; i++) {
-			int index = cur->index[i];
-		//	memset(histbuf + (index * 8), 0, 8);
-		//	bitmap &= ~(1 << index);
-			printf("\t%i: ", index);
-			for (int j = 0; j != '\0'; j++) {
-//				printf("%s", cur->);
-				printf("blah");
-			}
-		}
-//		free(cur);
-		// if prev not null, null prev.next
-		if (prev) prev->next = NULL;
-		// prev was null (first node deleted)
-		else start = NULL;
-	} */
+meta *history_get(int n) {
+	meta *cur = start;
+	meta last;
+	int pos = 0;
+	while (*cur && pos < n) {
+		cur = cur->next;
+		pos++;
+	}
+	return cur;
+}
+
+char *history_meta_str(meta *m) {
+	if (m == NULL) return NULL;
+	static char buf[MAX_LENGTH+1] = 0;
+	buf[m->length * 8] = 0;
+	for (int i = 0; i < m->length; i++) {
+		int idx = m->index[i];
+		memcpy(buf + (i * 8), histbuf + (idx * 8), 8);
+	}
+	return buf;
+}
+
+void print_history(int *n) {
+	if (n != NULL) 	printf("%s\n", history_meta_str(history_get(n)));
+	else 		printf("%s\n", history_meta_str(history_get(0)));
 } 
 
 void prompt() {
@@ -245,7 +243,7 @@ void runc(char *line, bool run) {
 		return;
 	} else if (strcmp(param[0], "history") == 0 || strcmp(param[0], "h") == 0) {
 //		print_error(shell, param[0], 2);
-		print_history(param);
+		print_history(param[1]);
 	} else if (strcmp(param[0], "derp") == 0) {
 		print_error(shell, param[0], 0);
 	} else {
