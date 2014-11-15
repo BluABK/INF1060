@@ -1,22 +1,29 @@
 # Let's define some variables
-NAME :=ifish
-OBJS =main.o safefork.o
+CLIENT_NAME :=client
+SERVER_NAME :=server
+CLIENT_OBJS :=client.o
+SERVER_OBJS :=server.o
 CC = gcc
 
 # Release preset
-CFLAGS=-O3 -Wall -std=c99
+#CFLAGS=-O3 -Wall -std=c99
 # Debug preset
-# CFLAGS=-O0 -g3 -Wall -Wextra -std=c99 -DDEBUG
+CFLAGS=-O0 -g3 -Wall -Wextra -std=c99 -DDEBUG
 
 # Declare "phony targets"
 .PHONY: all clean
 
-all: ifish
+all: $(SERVER_NAME) $(CLIENT NAME)
 
-$(NAME): $(OBJS)
-	$(CC) -o $(NAME) $(OBJS)
+$(SERVER_NAME): $(SERVER_OBJS)
+	$(CC) -o $(SERVER_NAME) $(SERVER_OBJS)
+
+$(CLIENT_NAME): $(CLIENT_OBJS)
+	$(CC) -o $(CLIENT_NAME) $(CLIENT_OBJS)
 
 # '@' Runs it in silent mode, and '-' will supress errors.
 clean:
-	@- $(RM) $(NAME)
-	@- $(RM) $(OBJS)
+	@- $(RM) $(CLIENT_NAME)
+	@- $(RM) $(SERVER_NAME)
+	@- $(RM) $(CLIENT_OBJS)
+	@- $(RM) $(SERVER_OBJS)
