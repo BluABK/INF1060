@@ -59,22 +59,38 @@ int main(int argc, char* argv[]) {
 		perror("accept");
 		return -4;
 	}
-	
-	printf("Client connected on remote port: %d\n", ntohs(cinfo.sin_port));
+	char cbuf[16]; // TODO: Possibly too ambitious size
+	const char *tha_client = inet_ntop(AF_INET, &cinfo.sin_addr.s_addr, cbuf, info_len);
+/*	if (retv !=1) {
+		perror("inet_ntop");
+		return -5;
+	}*/
+
+	printf("Client '%s' connected on remote port: %d\n", tha_client, ntohs(cinfo.sin_port));
 	
 	while (1) {
 		char buf[100];
 		ssize_t rd = recv(client_fd, buf, sizeof(buf)-1, 0);
-	
+		
 		if (rd > 0) {
 			buf[rd] = 0;
-			printf("Recieved %zd bytes from client: %s\n", rd, buf);
+			printf("RECV: %zd bytes from client on fd %d: %s\n", rd, client_fd, buf);
+			
+			if (buf == "DISCONNECT\n") {
+				printf("Client '%s:%d' disconnected from server\n", tha_client, ntohs(cinfo.sin_port));
+			}
 		} else {
 			break;
 		}
 		
-		ssize_t sent = send(client_fd, "Ohayou~\n", 13, 0);
-		printf("Sent %zd bytes to client on fd %d\n", sent, client_fd);
+		char *testword = "Heya\n";
+		ssize_t sent = send(client_fd, testword, strlen(testword), 0);
+		if (sent != -1) {
+			printf("SEND: %zd bytes to client on fd %d: %s\n", sent, client_fd, testword);
+		} else {
+			printf("SENDFAIL: to client on fd %d: %s\n", sent, client_fd, testword);
+		}
+
 	}
 
 	close(client_fd);

@@ -1,45 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>	// memset
-#include <unistd.h>	// close
+#include <string.h>		// memset
+#include <unistd.h>		// close
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <sys/types.h>		// getaddrinfo, freeaddrinfo, gai_strerror
+#include <sys/socket.h>		// getaddrinfo, freeaddrinfo, gai_strerror
 #include <netinet/in.h>
 #include <arpa/inet.h>		// htonl, htons, ntohl, ntohs
-#include <netdb.h>
+#include <netdb.h>		// getaddrinfo, freeaddrinfo, gai_strerror
 
 int main(int argc, char* argv[]) {
 	
 	int retv = 0;
-
 	if (argc < 3) {
 		printf("Usage: %s [host] [port]\n", argv[0]);
 		return 0;
 	}
 	
 	// port
-/*	int port;
+	// TODO: Find an alternative way to validate port input
 	
-	if ((port = atoi(argv[2])) == 0) {
-		printf("Invalid port!\n");
-		return 0;
-	}
-	*/
-	char *port = argv[2];
-/*
-	struct in_addr addr;
-	memset(&addr, 0, sizeof(addr));
-
-	retv = inet_pton(AF_INET, argv[1], &addr);
-	if (retv != 1) {
-		printf("inet_pton failed!\n");
-		return -1;
-	}
-*/
 	// getaddrinfo
 	const char *hostname = argv[1];
-	// move port here if working
+	char *port = argv[2];
 	struct addrinfo hints;
 	struct addrinfo *res;
 
@@ -82,46 +65,27 @@ int main(int argc, char* argv[]) {
 
 		cur = cur->ai_next;
 	}
-/*	int port;
-	if ((port = atoi(argv[2])) == 0) {
-		printf("Invalid port!\n");
-		return 0;
-	}
-
-	struct in_addr addr;
-	memset(&addr, 0, sizeof(addr));
-
-	retv = inet_pton(AF_INET, argv[1], &addr);
-	if (retv != 1) {
-		printf("inet_pton failed!\n");
-		return -1;
-	}
-*/
-
-//	int fd = socket(AF_INET, SOCK_STREAM, 0);
-/*	struct sockaddr_in other;
-	memset(&other, 0, sizeof(other));
 	
-	other.sin_family = AF_INET;
-	other.sin_port = htons(port);
-	other.sin_addr = addr;
-*/
-/*	retv = connect(fd, (struct sockaddr*)&other, sizeof(other));
-	if (retv != 0) {
-		perror("connect");
-		return -2;
-	}
-*/	
+	ssize_t sent;
+	char * cmd;
 	while(1) {
-		ssize_t sent = send(fd, "Ohayou~\n", 8, 0);
-//		if (send(fd, "Ohayou~\n", 5, 0) < 5) {
-		printf("Sent %zd bytes\n", sent);
-		if (sent < 8) {
-			break;
+		const char *testword = "Ohayou~\n";
+		for (int test = 0; test < 10; test++) {
+			sent = send(fd, testword, strlen(testword), 0);
+			// if (send(fd, "Ohayou~\n", 5, 0) < 5) {
+			printf("SEND: %zd bytes to server: %s\n", sent, testword);
+			if (sent < strlen(testword)) {
+				break;
+			}
 		}
+		break;
 	}
-
+	cmd = "DISCONNECT\n";
+	sent = send(fd, cmd, strlen(cmd), 0);
+	printf("SEND: %zd bytes: %s\n", sent, cmd);
+	printf("Closing filedescriptor\n");
 	close(fd);
+	printf("Freeing up addriinfo(res)\n");
 	freeaddrinfo(res);
 	return 0;
 }
