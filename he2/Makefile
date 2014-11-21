@@ -8,8 +8,8 @@ CC = gcc
 # Release preset
 #CFLAGS=-O3 -Wall -std=c99
 # Debug preset
-#CFLAGS=-O0 -g3 -Wall -Wextra -std=c99 -DDEBUG -D_POSIX_C_SOURCE=200112L
-CFLAGS=-O0 -g3 -Wall -Wextra -std=c99 -DDEBUG
+CFLAGS=-O0 -g3 -Wall -Wextra -std=c99 -DDEBUG -D_POSIX_C_SOURCE=200112L
+#CFLAGS=-O0 -g3 -Wall -Wextra -std=c99 -DDEBUG
 
 # Declare "phony targets"
 .PHONY: all clean
