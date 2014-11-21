@@ -92,11 +92,13 @@ int main(int argc, char* argv[]) {
 			}
 			return 0;
 		}
-
+//		if (kinda_boolean_ish = 1) {
 		for (i = 0; i < FD_SETSIZE; i++) {
+//			printf("Client %i:\n", i);
 			if (FD_ISSET(i, &readfds)) {
 				if (i == request_sd) {
 					// New connection request
+					printf("Client connected on sd[%i]\n", i);
 					if (numsocks < maxsocks) {
 						sd[numsocks] = accept(request_sd, (struct sockaddr *)&clientaddr, (socklen_t *)&clientaddrlen);
 						FD_SET(sd[numsocks], &fds);
@@ -107,12 +109,23 @@ int main(int argc, char* argv[]) {
 					}
 				} else {
 					// Data arrived on an existing socket - clientstuff
-					read(i, buf, 12);
-					buf[12] = 0;
-					printf("From socket. %d: %s\n", i, buf);
-				}
-			}
-		}
+					retv = read(i, buf, 12);
+					
+					if (retv > 0) {
+						buf[retv] = 0;
+						printf("From socket. %d: %s\n", i, buf);
+					} else if (retv <= 0) {
+//						perror("read()");
+						// TODO: handle client exit
+//						i = FD_SETSIZE;
+//						continue;
+//						printf("Client '%i' stopped sending data\n", sd[i]);
+						close(sd[i]);
+					}
+				} // else 
+			} // if (FDISSET
+		} // for
+//	} // kinda boolean
 
 		/*
 		   struct sockaddr_in cinfo;
