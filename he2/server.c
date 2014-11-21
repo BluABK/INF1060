@@ -101,8 +101,10 @@ int main(int argc, char* argv[]) {
 					printf("Client connected on sd %i\n", request_sd);
 					if (numsocks < maxsocks) {
 						sd[numsocks] = accept(request_sd, (struct sockaddr *)&clientaddr, (socklen_t *)&clientaddrlen);
+				
 						FD_SET(sd[numsocks], &fds);
 						numsocks++;
+						printf("accept-val %d\n", sd[numsocks]);
 					} else {
 						printf("Ran out of socket space.\n");
 						return -5;
@@ -120,6 +122,7 @@ int main(int argc, char* argv[]) {
 //						i = FD_SETSIZE;
 //						continue;
 //						printf("Client '%i' stopped sending data\n", sd[i]);
+						printf("i: %d\n", i);
 						close(sd[i]);
 					}
 				} // else 
