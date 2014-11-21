@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 	int clientaddrlen, i, retv;
 	int request_sd, sd[2], numsocks, maxsocks;
 	char buf[13];
-	fd_set fds, readfds;
+	fd_set fds, readfds, writefds, exceptfds;
 	struct timeval timeout;
 
 	numsocks = 0, maxsocks = 2;
@@ -60,11 +60,15 @@ int main(int argc, char* argv[]) {
 
 	// Initialise fd set
 	FD_ZERO(&fds);
-	FD_SET(request_sd, &fds);
-
-	while (1) {
+//	FD_SET(request_sd, &fds);	// makes select() return -1 o0
+	FD_SET(0, &fds);
+	printf("DEBUG: FD_SETSIZE = %i\n", FD_SETSIZE);
+	printf("DEBUG: request_sd = %i\n", request_sd);
+	// Main loop
+	for (;;) {
 		readfds = fds;
 		retv = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
+	//	retv = select(1, &readfds, NULL, NULL, &timeout);
 
 		// Something went wrong
 		if (retv == -1) {
