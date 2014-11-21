@@ -60,15 +60,18 @@ int main(int argc, char* argv[]) {
 
 	// Initialise fd set
 	FD_ZERO(&fds);
-//	FD_SET(request_sd, &fds);	// makes select() return -1 o0
-	FD_SET(0, &fds);
+	FD_SET(request_sd, &fds);	// makes select() return -1 o0
+//	FD_SET(0, &fds);
 	printf("DEBUG: FD_SETSIZE = %i\n", FD_SETSIZE);
 	printf("DEBUG: request_sd = %i\n", request_sd);
+	
+//	socklen_t siz = sizeof(clientaddr);
+
 	// Main loop
 	for (;;) {
 		readfds = fds;
-		retv = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
-	//	retv = select(1, &readfds, NULL, NULL, &timeout);
+//		retv = select(FD_SETSIZE, &readfds, NULL, NULL, NULL);
+		retv = accept(request_sd, (struct sockaddr*)&clientaddr, (socklen_t *)&clientaddrlen);
 
 		// Something went wrong
 		if (retv == -1) {
