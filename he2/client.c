@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 		for (int test = 0; test < 10; test++) {
 			sent = send(fd, testword, strlen(testword), 0);
 			// if (send(fd, "Ohayou~\n", 5, 0) < 5) {
-			printf("SEND: %zd bytes to server: %s\n", sent, testword);
+			printf("SEND: %zd bytes to server: %s", sent, testword);
 			if (sent < strlen(testword)) {
 				break;
 			}
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 	}
 	cmd = "DISCONNECT\n";
 	sent = send(fd, cmd, strlen(cmd), 0);
-	printf("SEND: %zd bytes: %s\n", sent, cmd);
+	printf("SEND: %zd bytes: %s", sent, cmd);
 	printf("Closing filedescriptor\n");
 	close(fd);
 	printf("Freeing up addriinfo(res)\n");
