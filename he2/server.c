@@ -123,7 +123,9 @@ int main(int argc, char* argv[]) {
 //						continue;
 //						printf("Client '%i' stopped sending data\n", sd[i]);
 						printf("i: %d\n", i);
-						close(sd[i]);
+						close(i);
+						FD_CLR(i, &fds);
+						numsocks--;
 					}
 				} // else 
 			} // if (FDISSET
