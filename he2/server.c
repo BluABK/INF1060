@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
 			if (FD_ISSET(i, &readfds)) {
 				if (i == request_sd) {
 					// New connection request
-					printf("Client connected on sd[%i]\n", i);
+					printf("Client connected on sd %i\n", request_sd);
 					if (numsocks < maxsocks) {
 						sd[numsocks] = accept(request_sd, (struct sockaddr *)&clientaddr, (socklen_t *)&clientaddrlen);
 						FD_SET(sd[numsocks], &fds);
