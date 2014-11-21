@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>		// memset
 #include <unistd.h>		// close
+#include <netdb.h>		// gai_strerror
 
 #include <sys/types.h>		// getaddrinfo, freeaddrinfo, gai_strerror
 #include <sys/socket.h>		// getaddrinfo, freeaddrinfo, gai_strerror
