@@ -27,12 +27,12 @@ int main(int argc, char* argv[]) {
 	struct sockaddr_in serveraddr;
 	struct sockaddr_in clientaddr;
 	int clientaddrlen, i, retv;
-	int request_sd, sd[2], numsocks, maxsocks;
+	int request_sd, numsocks, maxsocks;
 	char buf[13];
 	fd_set fds, readfds;
 	// fd_set writefds, exceptfds;
 
-	numsocks = 0, maxsocks = 2;
+	numsocks = 0, maxsocks = 1024;
 	/*	Deprecated - Select Law 1
 	 *	struct timeval timeout;
 	 *	timeout.tv_sec = 20;
@@ -84,10 +84,10 @@ int main(int argc, char* argv[]) {
 
 			for (i = 0; i < numsocks; i++) {
 				// Send a response
-				write(sd[i], "Server ACK", 11);
+				write(i, "Server ACK", 11);
 				// Close sockets
-				close(sd[i]);
-				FD_CLR(sd[i], &fds);
+				close(i);
+				FD_CLR(i, &fds);
 			}
 			return 0;
 		}
@@ -97,11 +97,15 @@ int main(int argc, char* argv[]) {
 					// New connection request
 					printf("Client connected on sd %i\n", request_sd);
 					if (numsocks < maxsocks) {
-						sd[numsocks] = accept(request_sd, (struct sockaddr *)&clientaddr, (socklen_t *)&clientaddrlen);
-
-						FD_SET(sd[numsocks], &fds);
-						numsocks++;
-						printf("accept-val %d\n", sd[numsocks]);
+						retv = accept(request_sd, (struct sockaddr *)&clientaddr, (socklen_t *)&clientaddrlen);
+						if (retv >= 0 ) {
+							FD_SET(numsocks, &fds);
+							numsocks++;
+							printf("accept-val %d\n", numsocks);
+						} else {
+							perror("accept()");
+							return -5;
+						}
 					} else {
 						printf("Ran out of socket space.\n");
 						return -5;
@@ -116,7 +120,7 @@ int main(int argc, char* argv[]) {
 					} else if (retv <= 0) {
 						// TODO: handle client exit
 						printf("i: %d\n", i);
-						close(sd[i]);
+						close(i);
 					}
 				} // else 
 			} // if (FDISSET
