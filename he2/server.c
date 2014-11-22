@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 	// memset
-#include <unistd.h> 	// close
+#include <string.h> 		// memset
+#include <unistd.h> 		// close
 #include <time.h>
 
 #include <sys/types.h>
@@ -29,12 +29,15 @@ int main(int argc, char* argv[]) {
 	int clientaddrlen, i, retv;
 	int request_sd, sd[2], numsocks, maxsocks;
 	char buf[13];
-	fd_set fds, readfds, writefds, exceptfds;
-	struct timeval timeout;
+	fd_set fds, readfds;
+	// fd_set writefds, exceptfds;
 
 	numsocks = 0, maxsocks = 2;
-	timeout.tv_sec = 20;
-	timeout.tv_usec = 0;
+	/*	Deprecated - Select Law 1
+	 *	struct timeval timeout;
+	 *	timeout.tv_sec = 20;
+	 *	timeout.tv_usec = 0;
+	 */
 	// Create Socket
 	request_sd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -60,18 +63,14 @@ int main(int argc, char* argv[]) {
 
 	// Initialise fd set
 	FD_ZERO(&fds);
-	FD_SET(request_sd, &fds);	// makes select() return -1 o0
-	//	FD_SET(0, &fds);
+	FD_SET(request_sd, &fds);
 	printf("DEBUG: FD_SETSIZE = %i\n", FD_SETSIZE);
 	printf("DEBUG: request_sd = %i\n", request_sd);
-
-	//	socklen_t siz = sizeof(clientaddr);
 
 	// Main loop
 	for (;;) {
 		readfds = fds;
 		retv = select(FD_SETSIZE, &readfds, NULL, NULL, NULL);
-		//		retv = accept(request_sd, (struct sockaddr*)&clientaddr, (socklen_t *)&clientaddrlen);
 
 		// Something went wrong
 		if (retv == -1) {
@@ -92,16 +91,14 @@ int main(int argc, char* argv[]) {
 			}
 			return 0;
 		}
-//		if (kinda_boolean_ish = 1) {
 		for (i = 0; i < FD_SETSIZE; i++) {
-//			printf("Client %i:\n", i);
 			if (FD_ISSET(i, &readfds)) {
 				if (i == request_sd) {
 					// New connection request
 					printf("Client connected on sd %i\n", request_sd);
 					if (numsocks < maxsocks) {
 						sd[numsocks] = accept(request_sd, (struct sockaddr *)&clientaddr, (socklen_t *)&clientaddrlen);
-				
+
 						FD_SET(sd[numsocks], &fds);
 						numsocks++;
 						printf("accept-val %d\n", sd[numsocks]);
@@ -112,26 +109,18 @@ int main(int argc, char* argv[]) {
 				} else {
 					// Data arrived on an existing socket - clientstuff
 					retv = read(i, buf, 12);
-					
+
 					if (retv > 0) {
 						buf[retv] = 0;
 						printf("From socket. %d: %s\n", i, buf);
 					} else if (retv <= 0) {
-//						perror("read()");
 						// TODO: handle client exit
-//						i = FD_SETSIZE;
-//						continue;
-//						printf("Client '%i' stopped sending data\n", sd[i]);
 						printf("i: %d\n", i);
-						close(i);
-						FD_CLR(i, &fds);
-						numsocks--;
+						close(sd[i]);
 					}
 				} // else 
 			} // if (FDISSET
 		} // for
-//	} // kinda boolean
-
 		/*
 		   struct sockaddr_in cinfo;
 		   memset(&cinfo, 0, sizeof(cinfo));
