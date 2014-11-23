@@ -11,16 +11,16 @@
 #include <netdb.h>		// getaddrinfo, freeaddrinfo, gai_strerror
 
 int main(int argc, char* argv[]) {
-	
+
 	int retv = 0;
 	if (argc < 3) {
 		printf("Usage: %s [host] [port]\n", argv[0]);
 		return 0;
 	}
-	
+
 	// port
 	// TODO: Find an alternative way to validate port input
-	
+
 	// getaddrinfo
 	const char *hostname = argv[1];
 	char *port = argv[2];
@@ -32,9 +32,9 @@ int main(int argc, char* argv[]) {
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = 0;
-	
+
 	retv = getaddrinfo(hostname, port, &hints, &res);
-	
+
 	if (retv != 0) {
 		printf("getaddrinfo failed: %s\n", gai_strerror(retv));
 		return -1;
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 			cur = cur->ai_next;
 			continue;
 		}
-		
+
 		// Connect to remote host
 		connect(fd, cur->ai_addr, cur->ai_addrlen);
 
@@ -61,32 +61,50 @@ int main(int argc, char* argv[]) {
 		buf[0] = 0;
 
 		inet_ntop(AF_INET, &(cur_addr->sin_addr.s_addr), buf, sizeof(buf));
-		
+
 		printf("Connecting to remote host: %s:%s\n", buf, port);
 
 		cur = cur->ai_next;
 	}
-	
+
 	ssize_t sent;
 	char * cmd;
 	while(1) {
-		const char *testword = "Ohayou~";
-		for (int test = 0; test < 10; test++) {
-			sent = send(fd, testword, strlen(testword), 0);
-			// if (send(fd, "Ohayou~\n", 5, 0) < 5) {
-			printf("SEND: %zd bytes to server: %s\n", sent, testword);
-			if (sent < strlen(testword)) {
-				break;
+		/*
+		   const char *testword = "Ohayou~";
+		   for (int test = 0; test < 10; test++) {
+		   sent = send(fd, testword, strlen(testword), 0);
+		// if (send(fd, "Ohayou~\n", 5, 0) < 5) {
+		printf("SEND: %zd bytes to server: %s\n", sent, testword);
+		if (sent < strlen(testword)) {
+		break;
+		}
+		}
+		break;
+		}
+		*/
+		sent = send(fd, "c", 7, 0);
+		int response = 0;
+		while (response == 0) {
+			char rbuf[100];
+			ssize_t rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
+
+			if (rd > 0) {
+				rbuf[rd] = 0;
+				printf("RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
+				response = 1;
 			}
 		}
 		break;
 	}
-	cmd = "DISCONNECT";
+	// End session
+	cmd = "d";
 	sent = send(fd, cmd, strlen(cmd), 0);
 	printf("SEND: %zd bytes: %s\n", sent, cmd);
 	printf("Closing filedescriptor\n");
 	close(fd);
 	printf("Freeing up addriinfo(res)\n");
+
 	freeaddrinfo(res);
 	return 0;
 }
