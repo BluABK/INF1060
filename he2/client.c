@@ -68,6 +68,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	ssize_t sent;
+	ssize_t rd;
+	char rbuf[100];
 	char * cmd;
 	while(1) {
 		/*
@@ -83,24 +85,30 @@ int main(int argc, char* argv[]) {
 		break;
 		}
 		*/
-		sent = send(fd, "pwd\n", 4, 0);
-		int response = 0;
-//		while (response == 0) {
-			char rbuf[100];
-			ssize_t rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
+		/*
+		   sent = send(fd, "pwd\n", 4, 0);
+		   rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
 
-			if (rd > 0) {
-				rbuf[rd] = 0;
-				printf("RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
-				response = 1;
-			}
-//		}
+		   if (rd > 0) {
+		   rbuf[rd] = 0;
+		   printf("RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
+		   }
+		   */
+		sent = send(fd, "stat\nloremipsum.txt\n", 20, 0);
+		/*
+		   rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
+
+		   if (rd > 0) {
+		   rbuf[rd] = 0;
+		   printf("RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
+		   }
+		   */
 		break;
 	}
 	// End session
-	cmd = "d";
-	sent = send(fd, cmd, strlen(cmd), 0);
-	printf("SEND: %zd bytes: %s\n", sent, cmd);
+	//	cmd = "d";
+	//	sent = send(fd, cmd, strlen(cmd), 0);
+	//	printf("SEND: %zd bytes: %s\n", sent, cmd);
 	printf("Closing filedescriptor\n");
 	close(fd);
 	printf("Freeing up addriinfo(res)\n");
