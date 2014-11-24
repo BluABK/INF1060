@@ -11,7 +11,12 @@
 #include <sys/select.h>		// fd_set
 
 void run_cmd(char cmd[], char arg[]) {
-	printf("Ran psuedo code\n");	
+	if (arg != NULL) {
+		fprintf(stderr, "run_cmd(%s, %s)\n", cmd, arg);
+	} else {
+		fprintf(stderr, "run_cmd(%s, NULL)\n", cmd);
+	}
+	perror("run_cmd()");
 }
 
 int main(int argc, char* argv[]) {
@@ -37,6 +42,7 @@ int main(int argc, char* argv[]) {
 	char strbuf[256];
 	int strpos = 0;
 	int bufstat = 0; // if set, await for more data / an arg
+	int cmdnum = 0;
 	char buf[1];
 	fd_set fds, readfds;
 	// fd_set writefds, exceptfds;
@@ -127,34 +133,79 @@ int main(int argc, char* argv[]) {
 
 					if (retv > 0) {
 						//						buf[retv] = 0;
-//						buf[1] = 0;
-//						char rcmd[5];// = strtok(buf, '\n');
-//						char rarg[256];
+						//						buf[1] = 0;
+						//						char rcmd[5];// = strtok(buf, '\n');
+						//						char rarg[256];
 						//	printf("From socket. %d: %s\n", i, buf);
 						if (buf[0] == '\n') {
-							char rcmd[strpos+1];
-							for (int c = 0;c < strpos; c++){
-							       	printf("rcmd[%d] = %c\n", c, strbuf[c]);
-								rcmd[c] = strbuf[c];
-							}
-							rcmd[strpos+1] = '\0';
-							printf("From socket %d: \\n --> strbuf[%d] --> rcmd\n", i, strpos);
-							printf("Parsed string: %s\n", rcmd);
-//							state = 1;
-//
-							if (strcmp(rcmd, "pwd") == 0) {
-								printf("Client requested cmd: pwd\n");
-								// run_cmd("pwd",NULL);
-							} else {
-								printf("Recieved cmd, but no match occured\n");
-							}
+							// bufstat = 0: recv cmd
+							if (bufstat == 0) {
+								char rcmd[strpos+1];
+								for (int c = 0;c < strpos; c++){
+									printf("rcmd[%d] = %c\n", c, strbuf[c]);
+									rcmd[c] = strbuf[c];
+								}
+								rcmd[strpos+1] = '\0';
+								printf("From socket %d: bufstat unset: the following is a command:\n", i);
+								printf("From socket %d: \\n --> strbuf[%d] --> rcmd\n", i, strpos);
+								printf("From socket %d: Parsed string: %s\n", i, rcmd);
+								//							state = 1;
 
+								// Check for corresponding commands and reset variables for next time
+								strpos = 0;
+
+								if (strcmp(rcmd, "pwd") == 0) {
+									printf("From socket %d: Client requested cmd: pwd\n", i);
+									run_cmd("pwd", NULL);
+								} else if (strcmp(rcmd, "ls") == 0) { 
+									printf("From socket %d: Client requested cmd: ls\n", i);
+									run_cmd("ls", buf);
+								} else if (strcmp(rcmd, "cd") == 0) {
+									printf("From socket %d: Client requested cmd: cd\n", i);
+									bufstat = 1, cmdnum = 1;
+								} else if (strcmp(rcmd, "get") == 0) {
+									printf("From socket %d: Client requested cmd: get\n", i);
+									bufstat = 1, cmdnum = 2;
+								} else if (strcmp(rcmd, "stat") == 0) {
+									printf("From socket %d: Client requested cmd: stat\n", i);
+									bufstat = 1, cmdnum = 3;
+								} else {
+									printf("From socket %d: Recieved cmd/newline, but no match occured\n", i);
+								}
+							} else { // buststat != 0: recv arg
+								char rarg[strpos+1];
+								for (int c = 0;c < strpos; c++){
+									printf("rarg[%d] = %c\n", c, strbuf[c]);
+									rarg[c] = strbuf[c];
+								}
+								rarg[strpos+1] = '\0';
+								printf("From socket %d: bufstat set: the following is an argument:\n", i);
+								printf("From socket %d: \\n --> strbuf[%d] --> rarg\n", i, strpos);
+								printf("From socket %d: Parsed string: %s\n", i, rarg);
+								//							state = 1;
+
+								// Check for corresponding commands and reset variables for next time
+								strpos = 0;	
+								
+								if (cmdnum == 1) {
+									printf("From socket %d: Client requested cmd w/ arg: cd %s\n", i, rarg);
+									run_cmd("cd", rarg);
+								} else if (cmdnum == 2) {
+									printf("From socket %d: Client requested cmd w/ arg: get %s\n", i, rarg);
+									run_cmd("get", rarg);
+								} else if (cmdnum == 3) {
+									printf("From socket %d: Client requested cmd w/ arg: stat %s\n", i, rarg);
+									run_cmd("stat", rarg);
+								}
+								bufstat = 0;
+								cmdnum = 0;
+							}
 						} else {
 							printf("From socket %d: %c --> strbuf[%d]\n", i, buf[0], strpos);
 							strbuf[strpos] = buf[0];
 							strpos++;
 						}
-						
+
 
 						// TODO: Exec command here if any
 						// ls, pwd, cd, get, stat, quit
@@ -168,13 +219,10 @@ int main(int argc, char* argv[]) {
 
 						// Check for commands that require no parameters
 						/*
-						if (strcmp(rcmd[0], 'p') == 0) run_cmd("pwd", NULL);
+						   if (strcmp(rcmd[0], 'p') == 0) run_cmd("pwd", NULL);
 
 						// Split out command, truncating it from buf entirely
-						else if (strcmp(rcmd, "ls") == 0) run_cmd("ls", buf);
-						else if (strcmp(rcmd, "cd") == 0) run_cmd("cd", buf);
-						else if (strcmp(rcmd, "get") == 0) run_cmd("get", buf);
-						else if (strcmp(rcmd, "stat") == 0) run_cmd("stat", buf);
+
 						else printf("Client sent invalid command!\n");
 						*/
 						//						else if (strcmp(buf, "quit") == 0) return 0; // handle client exit
