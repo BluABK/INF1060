@@ -9,7 +9,16 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>		// htonl, htons, ntohl, ntohs
 #include <netdb.h>		// getaddrinfo, freeaddrinfo, gai_strerror
+/*
+typedef struct server_t {
+	char rbuf[1024];
+	size_t pos;
 
+//	int state;
+	char *feed;
+	//	char *arg;
+} server;
+*/
 void help() {
 	fprintf(stderr, "[1] ls   - list current directory\n");
 	fprintf(stderr, "[2] pwd  - get working directory\n");
@@ -23,8 +32,8 @@ void help() {
 char *rpath = NULL;
 
 void prompt() {
-		fprintf(stdout, "[%s]>: ", rpath);
-		fflush(stdout);
+	fprintf(stdout, "[%s]>: ", rpath);
+	fflush(stdout);
 }
 
 int main(int argc, char* argv[]) {
@@ -40,6 +49,18 @@ int main(int argc, char* argv[]) {
 	char *port = argv[2];
 	struct addrinfo hints;
 	struct addrinfo *res;
+//	server *s; //= &server;
+//     	struct server *s = &server;
+//	s->pos = 0;
+	pos = 0;
+//	s->state = 0;
+//	s->feed = c->arg = NULL;
+	//	ssize_t sent;
+	//	ssize_t rd;
+	//	char rbuf[100];
+	char rbuf;
+	//	char * cmd;
+	char input[256];
 
 	memset(&hints, 0, sizeof(hints));
 
@@ -71,7 +92,7 @@ int main(int argc, char* argv[]) {
 		connect(fd, cur->ai_addr, cur->ai_addrlen);
 
 		struct sockaddr_in *cur_addr = (struct sockaddr_in*)cur->ai_addr;
-		char buf[100];
+		char buf[256];
 		buf[0] = 0;
 
 		inet_ntop(AF_INET, &(cur_addr->sin_addr.s_addr), buf, sizeof(buf));
@@ -81,51 +102,75 @@ int main(int argc, char* argv[]) {
 		cur = cur->ai_next;
 	}
 
-	ssize_t sent;
-	ssize_t rd;
-	char rbuf[100];
-	char * cmd;
 	// main loop
 	help();
-//	while(1) {
+	//	while(1) {
 	while(prompt(), fgets((void *)input, sizeof(input), stdin)) {
-		
-		char *tok = strtok(input, '\n');
-		char *arg = strtok(NULL, '\n');
+
+		char *tok = strtok(input, "\n");
+		char *arg = strtok(NULL, "\n");
 
 		if (arg != NULL) {
-			while (*arg != NULL && *arg == ' ') {
+			while (*arg && *arg == ' ') {
 				arg++;
 			}
 		}
 
 		if(!tok) {
 			continue;
-		} else if (strcmp(tok, "help" != NULL)) {
-				help();
-		} else if (strcmp(tok, "ls") != NULL) {
-			sent = send(fd, "ls\n", 3, 0);
+		} else if (!strcmp(tok, "help")) {
+			help();
+		} else if (!strcmp(tok, "ls")) {
+			send(fd, "ls\n", 3, 0);
+			/*
+			   rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
+			   if (rd > 0) {
+			   rbuf[rd] = 0;
+			   printf("DEBUG: RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
+			   printf("Current directory contains: %s\n", rbuf);
+			   }
+			*/
+		} else if (!strcmp(tok, "pwd")) {
+			// Send command to server
+			send(fd, "pwd\n", 4, 0);
+			
+			// Read response char-by-char, and end packet by char '\n'
+			int response = 0;
+			while (response == 0) {
+				retv = read(fd, &rbuf, 1);
+				if (retv > 0) {
+					if (rbuf == '\n') {
+						s->rbuf[s->pos] = 0;
+						s->pos = 0;
+						if(s->feed != NULL) free(s->feed);
+						s->feed = strdup(s->rbuf);
+						printf("From socket %d: \\n --> strbuf[%lu] --> rcmd\n", fd, s->pos);
+						printf("From socket %d: Parsed string: %s\n", fd, s->feed);
+						printf("Current directory: %s\n", s->feed);
+						response = 1;
+					} else {
+						printf("From socket %d: %c --> strbuf[%lu]\n", fd, rbuf, s->pos);
+						if(s->pos >= sizeof(s->rbuf)-1) {
+							printf("Ignoring because of full buffer\n");
+						} else {
+							s->rbuf[s->pos++] = rbuf;
+						}
+					}
+				} // if retv > 0
+			} // while response
+		} else if (!strcmp(tok, "cd")) {
+			// dummy
+		} else if (!strcmp(tok, "get")) {
+			// dummy
+		} else if (!strcmp(tok, "stat")) {
+			// dummy
+		} else if (!strcmp(tok, "quit")) {
+			printf("Quitting..\n");
+			break;
+		} else {
+			printf("Invalid command.\n");
+		}
 
-			rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
-			if (rd > 0) {
-				rbuf[rd] = 0;
-				printf("DEBUG: RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
-				printf("Current directory contains: %s\n", rbuf);
-		   	}
-		} else if (strcmp(tok, "pwd") != NULL) {
-			sent = send(fd, "pwd\n", 4, 0);
-
-			rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
-			if (rd > 0) {
-				rbuf[rd] = 0;
-				printf("DEBUG: RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
-				printf("Current directory: %s\n", rbuf);
-		   	}
-		} else if (strcmp(tok, "ls") != NULL) {
-		} else if (strcmp(tok, "ls") != NULL) {
-		} else if (strcmp(tok, "ls") != NULL) {
-		} else if (strcmp(tok, "ls") != NULL) {
-		
 		/*
 		   const char *testword = "Ohayou~";
 		   for (int test = 0; test < 10; test++) {
@@ -148,7 +193,7 @@ int main(int argc, char* argv[]) {
 		   printf("RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
 		   }
 		   */
-		sent = send(fd, "stat\nloremipsum.txt\n", 20, 0);
+		send(fd, "stat\nloremipsum.txt\n", 20, 0);
 		/*
 		   rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
 
