@@ -192,8 +192,6 @@ int main(int argc, char* argv[]) {
 							}
 						}
 					} else if (retv <= 0) {
-						// TODO: handle client exit
-						printf("i: %d\n", i);
 						close(i);
 						if(c->cmd) free(c->cmd);
 						if(c->arg) free(c->arg);
@@ -211,48 +209,3 @@ int main(int argc, char* argv[]) {
 	//	close(fd);
 	return 0;
 }
-
-
-/*
-   struct sockaddr_in cinfo;
-   memset(&cinfo, 0, sizeof(cinfo));
-   socklen_t info_len = sizeof(cinfo);
-   int client_fd = accept(fd, (struct sockaddr*)&cinfo, &info_len);
-   if (client_fd == -1) {
-   perror("accept");
-   return -4;
-   }
-   char cbuf[16]; // TODO: Possibly too ambitious size
-   const char *tha_client = inet_ntop(AF_INET, &cinfo.sin_addr.s_addr, cbuf, info_len);
-   if (retv !=1) {
-   perror("inet_ntop");
-   return -5;
-   }*/
-/*
-   printf("Client '%s' connected on remote port: %d\n", tha_client, ntohs(cinfo.sin_port));
-
-
-   while (1) {
-   char buf[100];
-   ssize_t rd = recv(client_fd, buf, sizeof(buf)-1, 0);
-
-   if (rd > 0) {
-   buf[rd] = 0;
-   printf("RECV: %zd bytes from client on fd %d: %s\n", rd, client_fd, buf);
-
-   if (!strcmp(buf, "DISCONNECT\n")) {
-   printf("Client '%s:%d' disconnected from server\n", tha_client, ntohs(cinfo.sin_port));
-   }
-   } else {
-   break;
-   }
-
-   char *testword = "Heya\n";
-   ssize_t sent = send(client_fd, testword, strlen(testword), 0);
-   if (sent != -1) {
-   printf("SEND: %zd bytes to client on fd %d: %s\n", sent, client_fd, testword);
-   } else {
-   printf("SENDFAIL: %li bytes to client on fd %d: %s\n", sent, client_fd, testword);
-   }
-   }
-   */
