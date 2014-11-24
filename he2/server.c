@@ -10,6 +10,10 @@
 #include <arpa/inet.h>		// htonl, htons, ntohl, ntohs
 #include <sys/select.h>		// fd_set
 
+void run_cmd(char cmd[], char arg[]) {
+	printf("Ran psuedo code\n");	
+}
+
 int main(int argc, char* argv[]) {
 
 	if (argc < 2) {
@@ -30,7 +34,10 @@ int main(int argc, char* argv[]) {
 	struct sockaddr_in clientaddr;
 	int clientaddrlen, i, retv;
 	int request_sd;
-	char buf[13];
+	char strbuf[256];
+	int strpos = 0;
+	int bufstat = 0; // if set, await for more data / an arg
+	char buf[1];
 	fd_set fds, readfds;
 	// fd_set writefds, exceptfds;
 
@@ -112,11 +119,42 @@ int main(int argc, char* argv[]) {
 					}
 				} else {
 					// Data arrived on an existing socket - clientstuff
-					retv = read(i, buf, 12);
+
+					// Read char-by-char, separate command, ifreq param and command packet end by the byte char \n
+					//					retv = read(i, buf, 12);
+
+					retv = read(i, buf, 1);
 
 					if (retv > 0) {
-						buf[retv] = 0;
-						printf("From socket. %d: %s\n", i, buf);
+						//						buf[retv] = 0;
+//						buf[1] = 0;
+//						char rcmd[5];// = strtok(buf, '\n');
+//						char rarg[256];
+						//	printf("From socket. %d: %s\n", i, buf);
+						if (buf[0] == '\n') {
+							char rcmd[strpos+1];
+							for (int c = 0;c < strpos; c++){
+							       	printf("rcmd[%d] = %c\n", c, strbuf[c]);
+								rcmd[c] = strbuf[c];
+							}
+							rcmd[strpos+1] = '\0';
+							printf("From socket %d: \\n --> strbuf[%d] --> rcmd\n", i, strpos);
+							printf("Parsed string: %s\n", rcmd);
+//							state = 1;
+//
+							if (strcmp(rcmd, "pwd") == 0) {
+								printf("Client requested cmd: pwd\n");
+								// run_cmd("pwd",NULL);
+							} else {
+								printf("Recieved cmd, but no match occured\n");
+							}
+
+						} else {
+							printf("From socket %d: %c --> strbuf[%d]\n", i, buf[0], strpos);
+							strbuf[strpos] = buf[0];
+							strpos++;
+						}
+						
 
 						// TODO: Exec command here if any
 						// ls, pwd, cd, get, stat, quit
@@ -127,77 +165,78 @@ int main(int argc, char* argv[]) {
 						//								}
 						//}
 						//
-						
+
 						// Check for commands that require no parameters
-						if (strcmp(buf[0], 'p') == 0) run_cmd("pwd", NULL);
-						
+						/*
+						if (strcmp(rcmd[0], 'p') == 0) run_cmd("pwd", NULL);
+
 						// Split out command, truncating it from buf entirely
-						char * cmd = strtok(buf, " ");
-						else if (strcmp(cmd, "ls") == 0) run_cmd("ls", buf);
-						else if (strcmp(cmd, "cd") == 0) run_cmd("cd", buf);
-						else if (strcmp(cmd, "get") == 0) run_cmd("get", buf);
-						else if (strcmp(cmd, "stat") == 0) run_cmd("stat", buf);
+						else if (strcmp(rcmd, "ls") == 0) run_cmd("ls", buf);
+						else if (strcmp(rcmd, "cd") == 0) run_cmd("cd", buf);
+						else if (strcmp(rcmd, "get") == 0) run_cmd("get", buf);
+						else if (strcmp(rcmd, "stat") == 0) run_cmd("stat", buf);
 						else printf("Client sent invalid command!\n");
-//						else if (strcmp(buf, "quit") == 0) return 0; // handle client exit
+						*/
+						//						else if (strcmp(buf, "quit") == 0) return 0; // handle client exit
+					} else if (retv <= 0) {
+						// TODO: handle client exit
+						printf("i: %d\n", i);
+						close(i);
+						FD_CLR(i, &fds);
 					}
-				}
-					// Loop around ~
-				} else if (retv <= 0) {
-					// TODO: handle client exit
-					printf("i: %d\n", i);
-					close(i);
-					FD_CLR(i, &fds);
-				}
-			} // else 
-		} // if (FDISSET
-	} // for
-	/*
-	   struct sockaddr_in cinfo;
-	   memset(&cinfo, 0, sizeof(cinfo));
-	   socklen_t info_len = sizeof(cinfo);
-	   int client_fd = accept(fd, (struct sockaddr*)&cinfo, &info_len);
-	   if (client_fd == -1) {
-	   perror("accept");
-	   return -4;
-	   }
-	   char cbuf[16]; // TODO: Possibly too ambitious size
-	   const char *tha_client = inet_ntop(AF_INET, &cinfo.sin_addr.s_addr, cbuf, info_len);
-	   if (retv !=1) {
-	   perror("inet_ntop");
-	   return -5;
-	   }*/
-	/*
-	   printf("Client '%s' connected on remote port: %d\n", tha_client, ntohs(cinfo.sin_port));
+				} // else 
+			} // if (FDISSET
+		} // for FD_SETSIZE
+		// code moved to end of file
+	} // for(;;)
 
-
-	   while (1) {
-	   char buf[100];
-	   ssize_t rd = recv(client_fd, buf, sizeof(buf)-1, 0);
-
-	   if (rd > 0) {
-	   buf[rd] = 0;
-	   printf("RECV: %zd bytes from client on fd %d: %s\n", rd, client_fd, buf);
-
-	   if (!strcmp(buf, "DISCONNECT\n")) {
-	   printf("Client '%s:%d' disconnected from server\n", tha_client, ntohs(cinfo.sin_port));
-	   }
-	   } else {
-	   break;
-	   }
-
-	   char *testword = "Heya\n";
-	   ssize_t sent = send(client_fd, testword, strlen(testword), 0);
-	   if (sent != -1) {
-	   printf("SEND: %zd bytes to client on fd %d: %s\n", sent, client_fd, testword);
-	   } else {
-	   printf("SENDFAIL: %li bytes to client on fd %d: %s\n", sent, client_fd, testword);
-	   }
-	   }
-	   */
+	close(request_sd);
+	//	close(client_fd);
+	//	close(fd);
+	return 0;
 }
 
-close(request_sd);
-//	close(client_fd);
-//	close(fd);
-return 0;
-}
+
+/*
+   struct sockaddr_in cinfo;
+   memset(&cinfo, 0, sizeof(cinfo));
+   socklen_t info_len = sizeof(cinfo);
+   int client_fd = accept(fd, (struct sockaddr*)&cinfo, &info_len);
+   if (client_fd == -1) {
+   perror("accept");
+   return -4;
+   }
+   char cbuf[16]; // TODO: Possibly too ambitious size
+   const char *tha_client = inet_ntop(AF_INET, &cinfo.sin_addr.s_addr, cbuf, info_len);
+   if (retv !=1) {
+   perror("inet_ntop");
+   return -5;
+   }*/
+/*
+   printf("Client '%s' connected on remote port: %d\n", tha_client, ntohs(cinfo.sin_port));
+
+
+   while (1) {
+   char buf[100];
+   ssize_t rd = recv(client_fd, buf, sizeof(buf)-1, 0);
+
+   if (rd > 0) {
+   buf[rd] = 0;
+   printf("RECV: %zd bytes from client on fd %d: %s\n", rd, client_fd, buf);
+
+   if (!strcmp(buf, "DISCONNECT\n")) {
+   printf("Client '%s:%d' disconnected from server\n", tha_client, ntohs(cinfo.sin_port));
+   }
+   } else {
+   break;
+   }
+
+   char *testword = "Heya\n";
+   ssize_t sent = send(client_fd, testword, strlen(testword), 0);
+   if (sent != -1) {
+   printf("SEND: %zd bytes to client on fd %d: %s\n", sent, client_fd, testword);
+   } else {
+   printf("SENDFAIL: %li bytes to client on fd %d: %s\n", sent, client_fd, testword);
+   }
+   }
+   */
