@@ -10,6 +10,23 @@
 #include <arpa/inet.h>		// htonl, htons, ntohl, ntohs
 #include <netdb.h>		// getaddrinfo, freeaddrinfo, gai_strerror
 
+void help() {
+	fprintf(stderr, "[1] ls   - list current directory\n");
+	fprintf(stderr, "[2] pwd  - get working directory\n");
+	fprintf(stderr, "[3] cd   - change working directory\n");
+	fprintf(stderr, "[4] get  - get and write file to standard output\n");
+	fprintf(stderr, "[5] stat - get file information\n");
+	fprintf(stderr, "[?] help\n");
+	fprintf(stderr, "[q] quit\n");
+}
+
+char *rpath = NULL;
+
+void prompt() {
+		fprintf(stdout, "[%s]>: ", rpath);
+		fflush(stdout);
+}
+
 int main(int argc, char* argv[]) {
 
 	int retv = 0;
@@ -17,9 +34,6 @@ int main(int argc, char* argv[]) {
 		printf("Usage: %s [host] [port]\n", argv[0]);
 		return 0;
 	}
-
-	// port
-	// TODO: Find an alternative way to validate port input
 
 	// getaddrinfo
 	const char *hostname = argv[1];
@@ -71,7 +85,47 @@ int main(int argc, char* argv[]) {
 	ssize_t rd;
 	char rbuf[100];
 	char * cmd;
-	while(1) {
+	// main loop
+	help();
+//	while(1) {
+	while(prompt(), fgets((void *)input, sizeof(input), stdin)) {
+		
+		char *tok = strtok(input, '\n');
+		char *arg = strtok(NULL, '\n');
+
+		if (arg != NULL) {
+			while (*arg != NULL && *arg == ' ') {
+				arg++;
+			}
+		}
+
+		if(!tok) {
+			continue;
+		} else if (strcmp(tok, "help" != NULL)) {
+				help();
+		} else if (strcmp(tok, "ls") != NULL) {
+			sent = send(fd, "ls\n", 3, 0);
+
+			rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
+			if (rd > 0) {
+				rbuf[rd] = 0;
+				printf("DEBUG: RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
+				printf("Current directory contains: %s\n", rbuf);
+		   	}
+		} else if (strcmp(tok, "pwd") != NULL) {
+			sent = send(fd, "pwd\n", 4, 0);
+
+			rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
+			if (rd > 0) {
+				rbuf[rd] = 0;
+				printf("DEBUG: RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
+				printf("Current directory: %s\n", rbuf);
+		   	}
+		} else if (strcmp(tok, "ls") != NULL) {
+		} else if (strcmp(tok, "ls") != NULL) {
+		} else if (strcmp(tok, "ls") != NULL) {
+		} else if (strcmp(tok, "ls") != NULL) {
+		
 		/*
 		   const char *testword = "Ohayou~";
 		   for (int test = 0; test < 10; test++) {
@@ -105,10 +159,6 @@ int main(int argc, char* argv[]) {
 		   */
 		break;
 	}
-	// End session
-	//	cmd = "d";
-	//	sent = send(fd, cmd, strlen(cmd), 0);
-	//	printf("SEND: %zd bytes: %s\n", sent, cmd);
 	printf("Closing filedescriptor\n");
 	close(fd);
 	printf("Freeing up addriinfo(res)\n");
