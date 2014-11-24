@@ -10,7 +10,17 @@
 #include <arpa/inet.h>		// htonl, htons, ntohl, ntohs
 #include <sys/select.h>		// fd_set
 
-void run_cmd(char cmd[], char arg[]) {
+typedef struct client_t {
+	// If this buffer gets large, allocate clients on stack instead (potential SIGSEGV fix)
+	char buf[1024];
+	size_t pos;
+
+	int state;
+	char *cmd;
+	char *arg;
+} client;
+
+void run_cmd(int fd, char cmd[], char arg[]) {
 	if (arg != NULL) {
 		fprintf(stderr, "run_cmd(%s, %s)\n", cmd, arg);
 	} else {
@@ -39,11 +49,9 @@ int main(int argc, char* argv[]) {
 	struct sockaddr_in clientaddr;
 	int clientaddrlen, i, retv;
 	int request_sd;
-	char strbuf[256];
 	int strpos = 0;
-	int bufstat = 0; // if set, await for more data / an arg
-	int cmdnum = 0;
-	char buf[1];
+	char buf;
+	client *c, clients[FD_SETSIZE];
 	fd_set fds, readfds;
 	// fd_set writefds, exceptfds;
 
@@ -114,6 +122,10 @@ int main(int argc, char* argv[]) {
 					clientaddrlen = sizeof(clientaddr);
 					retv = accept(request_sd, (struct sockaddr *)&clientaddr, (socklen_t *)&clientaddrlen);
 					if (retv >= 0 ) {
+						c = &clients[retv];
+						c->pos = 0;
+						c->state = 0;
+						c->cmd = c->arg = NULL;
 						FD_SET(retv, &fds);
 						printf("accept-val %d\n", retv);
 					} else if(retv >= FD_SETSIZE) {
@@ -124,88 +136,65 @@ int main(int argc, char* argv[]) {
 						return -5;
 					}
 				} else {
+					c = &clients[i];
 					// Data arrived on an existing socket - clientstuff
 
 					// Read char-by-char, separate command, ifreq param and command packet end by the byte char \n
 					//					retv = read(i, buf, 12);
 
-					retv = read(i, buf, 1);
+					retv = read(i, &buf, 1);
 
 					if (retv > 0) {
-						//						buf[retv] = 0;
-						//						buf[1] = 0;
-						//						char rcmd[5];// = strtok(buf, '\n');
-						//						char rarg[256];
-						//	printf("From socket. %d: %s\n", i, buf);
-						if (buf[0] == '\n') {
-							// bufstat = 0: recv cmd
-							if (bufstat == 0) {
-								char rcmd[strpos+1];
-								for (int c = 0;c < strpos; c++){
-									printf("rcmd[%d] = %c\n", c, strbuf[c]);
-									rcmd[c] = strbuf[c];
-								}
-								rcmd[strpos+1] = '\0';
+						if (buf == '\n') {
+							c->buf[c->pos] = 0;
+							c->pos = 0;
+							if(!c->state) {
+								// !state: recv cmd
+								if(c->cmd != NULL) free(c->cmd);
+								c->cmd = strdup(c->buf);
 								printf("From socket %d: bufstat unset: the following is a command:\n", i);
-								printf("From socket %d: \\n --> strbuf[%d] --> rcmd\n", i, strpos);
-								printf("From socket %d: Parsed string: %s\n", i, rcmd);
-								//							state = 1;
+								printf("From socket %d: \\n --> strbuf[%lu] --> rcmd\n", i, c->pos);
+								printf("From socket %d: Parsed string: %s\n", i, c->cmd);
 
-								// Check for corresponding commands and reset variables for next time
-								strpos = 0;
-
-								if (strcmp(rcmd, "pwd") == 0) {
+								if (strcmp(c->cmd, "pwd") == 0) {
 									printf("From socket %d: Client requested cmd: pwd\n", i);
-									run_cmd("pwd", NULL);
-								} else if (strcmp(rcmd, "ls") == 0) { 
+									run_cmd(i, "pwd", NULL);
+								} else if (strcmp(c->cmd, "ls") == 0) {
 									printf("From socket %d: Client requested cmd: ls\n", i);
-									run_cmd("ls", buf);
-								} else if (strcmp(rcmd, "cd") == 0) {
+									run_cmd(i, "ls", NULL);
+								} else if (strcmp(c->cmd, "cd") == 0) {
 									printf("From socket %d: Client requested cmd: cd\n", i);
-									bufstat = 1, cmdnum = 1;
-								} else if (strcmp(rcmd, "get") == 0) {
+									c->state = 1;
+								} else if (strcmp(c->cmd, "get") == 0) {
 									printf("From socket %d: Client requested cmd: get\n", i);
-									bufstat = 1, cmdnum = 2;
-								} else if (strcmp(rcmd, "stat") == 0) {
+									c->state = 1;
+								} else if (strcmp(c->cmd, "stat") == 0) {
 									printf("From socket %d: Client requested cmd: stat\n", i);
-									bufstat = 1, cmdnum = 3;
+									c->state = 1;
 								} else {
 									printf("From socket %d: Recieved cmd/newline, but no match occured\n", i);
 								}
-							} else { // buststat != 0: recv arg
-								char rarg[strpos+1];
-								for (int c = 0;c < strpos; c++){
-									printf("rarg[%d] = %c\n", c, strbuf[c]);
-									rarg[c] = strbuf[c];
-								}
-								rarg[strpos+1] = '\0';
+							} else { // state != 0: recv arg
+								if(c->arg != NULL) free(c->arg);
+								c->arg = strdup(c->buf);
+
 								printf("From socket %d: bufstat set: the following is an argument:\n", i);
 								printf("From socket %d: \\n --> strbuf[%d] --> rarg\n", i, strpos);
-								printf("From socket %d: Parsed string: %s\n", i, rarg);
-								//							state = 1;
-
-								// Check for corresponding commands and reset variables for next time
-								strpos = 0;	
+								printf("From socket %d: Parsed string: %s\n", i, c->arg);
+								// state = 1;
 								
-								if (cmdnum == 1) {
-									printf("From socket %d: Client requested cmd w/ arg: cd %s\n", i, rarg);
-									run_cmd("cd", rarg);
-								} else if (cmdnum == 2) {
-									printf("From socket %d: Client requested cmd w/ arg: get %s\n", i, rarg);
-									run_cmd("get", rarg);
-								} else if (cmdnum == 3) {
-									printf("From socket %d: Client requested cmd w/ arg: stat %s\n", i, rarg);
-									run_cmd("stat", rarg);
-								}
-								bufstat = 0;
-								cmdnum = 0;
+								printf("From socket %d: Client requested cmd w/ arg: %s %s\n", i, c->cmd, c->arg);
+								run_cmd(i, c->cmd, c->arg);
+								c->state = 0;
 							}
 						} else {
-							printf("From socket %d: %c --> strbuf[%d]\n", i, buf[0], strpos);
-							strbuf[strpos] = buf[0];
-							strpos++;
+							printf("From socket %d: %c --> strbuf[%lu]\n", i, buf, c->pos);
+							if(c->pos >= sizeof(c->buf)-1) {
+								printf("Ignoring because of full buffer\n");
+							} else {
+								c->buf[c->pos++] = buf;
+							}
 						}
-
 
 						// TODO: Exec command here if any
 						// ls, pwd, cd, get, stat, quit
@@ -225,12 +214,15 @@ int main(int argc, char* argv[]) {
 
 						else printf("Client sent invalid command!\n");
 						*/
-						//						else if (strcmp(buf, "quit") == 0) return 0; // handle client exit
+						// else if (strcmp(buf, "quit") == 0) return 0; // handle client exit
 					} else if (retv <= 0) {
 						// TODO: handle client exit
 						printf("i: %d\n", i);
 						close(i);
+						if(c->cmd) free(c->cmd);
+						if(c->arg) free(c->arg);
 						FD_CLR(i, &fds);
+
 					}
 				} // else 
 			} // if (FDISSET
