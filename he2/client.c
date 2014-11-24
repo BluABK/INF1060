@@ -83,9 +83,9 @@ int main(int argc, char* argv[]) {
 		break;
 		}
 		*/
-		sent = send(fd, "c", 7, 0);
+		sent = send(fd, "pwd\n", 4, 0);
 		int response = 0;
-		while (response == 0) {
+//		while (response == 0) {
 			char rbuf[100];
 			ssize_t rd = recv(fd, rbuf, sizeof(rbuf)-1, 0);
 
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 				printf("RECV: %zd bytes from server on fd %d: %s\n", rd, fd, rbuf);
 				response = 1;
 			}
-		}
+//		}
 		break;
 	}
 	// End session
