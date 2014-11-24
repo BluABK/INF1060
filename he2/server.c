@@ -136,12 +136,9 @@ int main(int argc, char* argv[]) {
 						return -5;
 					}
 				} else {
-					c = &clients[i];
 					// Data arrived on an existing socket - clientstuff
-
+					c = &clients[i];
 					// Read char-by-char, separate command, ifreq param and command packet end by the byte char \n
-					//					retv = read(i, buf, 12);
-
 					retv = read(i, &buf, 1);
 
 					if (retv > 0) {
@@ -181,7 +178,6 @@ int main(int argc, char* argv[]) {
 								printf("From socket %d: bufstat set: the following is an argument:\n", i);
 								printf("From socket %d: \\n --> strbuf[%d] --> rarg\n", i, strpos);
 								printf("From socket %d: Parsed string: %s\n", i, c->arg);
-								// state = 1;
 								
 								printf("From socket %d: Client requested cmd w/ arg: %s %s\n", i, c->cmd, c->arg);
 								run_cmd(i, c->cmd, c->arg);
@@ -195,26 +191,6 @@ int main(int argc, char* argv[]) {
 								c->buf[c->pos++] = buf;
 							}
 						}
-
-						// TODO: Exec command here if any
-						// ls, pwd, cd, get, stat, quit
-						//						int check;
-						//						for (check = 0; check < sizeof(commands);check++) {
-						//							if (strcmp(commands[check], buffer) != 0) {
-						//								printf("DEBUG: Buffer matched command '%s'", commands[check]);
-						//								}
-						//}
-						//
-
-						// Check for commands that require no parameters
-						/*
-						   if (strcmp(rcmd[0], 'p') == 0) run_cmd("pwd", NULL);
-
-						// Split out command, truncating it from buf entirely
-
-						else printf("Client sent invalid command!\n");
-						*/
-						// else if (strcmp(buf, "quit") == 0) return 0; // handle client exit
 					} else if (retv <= 0) {
 						// TODO: handle client exit
 						printf("i: %d\n", i);
